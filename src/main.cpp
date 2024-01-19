@@ -715,7 +715,7 @@ if(!SPIFFS.begin(true)){
  
   update_Clock(CLOCKU);
   update_Clock(CLOCKL);
-  listDir(SPIFFS, "/White", 0);
+  listDir(SPIFFS, "/", 0);
 }
 
 
