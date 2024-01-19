@@ -15,6 +15,7 @@ Change frequency in PanelLan_esp32_arduino/src/board/sc05/sc05.cpp to
 #include <FS.h>
 #include <SD.h>
 #include <SPI.h>
+#include "SPIFFS.h"
 
 
 
@@ -41,6 +42,7 @@ SPIClass SDCARD_SPI = SPIClass(HSPI);
  
 
 
+
 // MISC Variables
 
 
@@ -49,23 +51,6 @@ SPIClass SDCARD_SPI = SPIClass(HSPI);
 char ssid[] = "Freudenhaus2";
 char passwd[] = "aquarius";
 
-
-int RPML_v;
-int RPMR_v;
-
-int TMPL_v;
-int TMPR_v;
-
-int FFXL_v;
-int FFXR_v;
-
-int OILL_v;
-int OILR_v;
-
-const char* oilT_value = "OIL";
-const char* nozT_value = "NOZ";
-
-int BINGO_v;
 
 //Clock
 String TC_H = "00";
@@ -102,7 +87,9 @@ LGFX_Sprite NOZL_IMAGE(&tft);
 LGFX_Sprite SMALL_BLOCK(&tft);
 
 static const lgfx::U8g2font segments26( segments );
-static const lgfx::U8g2font segmentsa42( segments42 );
+static const lgfx::U8g2font segmentsa42( bdf_font );
+static const lgfx::U8g2font clock28_font( clock28 );
+static const lgfx::U8g2font nirmala_font( nirmala );
 
 
 struct display_element{
@@ -112,12 +99,13 @@ struct display_element{
   int pos_y;
   int textalign;
   LGFX_Sprite* sprite;
+  const char* value;
 };
 
 // Drawing positions in pixel
 // RPM
 
-enum {
+enum Display_Name{
   RPML,
   RPMR,
   RPMT,
@@ -143,32 +131,33 @@ enum {
   L,
   R
 };
+
 display_element display_elements[24]= {
   //width, hight, posx, posy, textalign
-  {110, 56, 58, 20,2,&THREED}, //RPML
-  {110, 56,250, 20,0,&THREED}, //RPMR
-  { 45, 70,190, 20,1,&LABELS}, //RPMT
-  {110, 56, 58, 85,2,&THREED}, //TMPL
-  {110, 56,250, 85,0,&THREED}, //TMPR
-  { 45, 70,190, 85,1,&LABELS}, //TMPT
-  {110, 56, 85,160,2,&THREED}, //FFL
-  {110, 56,250,160,0,&THREED}, //FFR
-  { 45, 70,190,160,1,&LABELS}, //FFT
-  {110, 56, 85,400,2,&THREED}, //OILL
-  {110, 56,250,400,0,&THREED}, //OILR
-  { 45, 70,190,400,1,&LABELS}, //OILT
-  {150,153, 85,230,0,&NOZL_IMAGE}, //NOZL
-  {150,153,211,230,0,&NOZL_IMAGE}, //NOZR
-  { 45, 70,190,300,1,&LABELS}, //NOZT
-  {100,100,540, 30,2,&CLOCK}, //FUELU
-  {100,100,540, 85,2,&CLOCK}, //FUELL
-  {230, 56,570,215,2,&CLOCK}, //BINGO
-  {230, 56,570,195,1,&LABELS}, //BINGOT
-  {230, 56,520,310,2,&CLOCK}, //CLOCKU
-  {230, 56,520,375,2,&CLOCK}, //CLOCKL
-  { 20, 20,700,360,1,&SMALL_BLOCK}, //ZULU
-  { 20, 20,700, 60,1,&SMALL_BLOCK}, //L
-  { 20, 20,700,110,1,&SMALL_BLOCK}, //R
+  {110, 56, 58, 20,2,&THREED,"012"}, //RPML
+  {110, 56,250, 20,0,&THREED,"345"}, //RPMR
+  { 55, 70,180, 20,1,&LABELS,"RPM"}, //RPMT
+  {110, 56, 58, 85,2,&THREED,"678"}, //TMPL
+  {110, 56,250, 85,0,&THREED,"0"}, //TMPR
+  { 55, 70,180, 85,1,&LABELS,"TEMP"}, //TMPT
+  {110, 56, 58,160,2,&THREED,"0"}, //FFL
+  {110, 56,250,160,2,&THREED,"0"}, //FFR
+  { 55, 70,180,160,1,&LABELS," FF \nX100"}, //FFT
+  {110, 56, 58,400,2,&THREED,"0"}, //OILL
+  {110, 56,250,400,0,&THREED,"0"}, //OILR
+  { 55, 70,180,400,1,&LABELS,"OIL"}, //OILT
+  {150,153, 58,230,0,&NOZL_IMAGE,"L0.bmp"}, //NOZL
+  {150,153,211,230,0,&NOZL_IMAGE,"R0.bmp"}, //NOZR
+  { 55, 70,180,300,1,&LABELS,"NOZ"}, //NOZT
+  {190, 56,550, 30,2,&CLOCK,"0"}, //FUELU
+  {190, 56,550, 85,2,&CLOCK,"0"}, //FUELL
+  {190, 56,550,215,2,&CLOCK,"0"}, //BINGO
+  { 55, 56,580,185,1,&LABELS,"BINGO"}, //BINGOT
+  {190, 56,550,310,0,&CLOCK,"0"}, //CLOCKU
+  {190, 56,550,375,0,&CLOCK,"0"}, //CLOCKL
+  { 30, 40,740,350,1,&SMALL_BLOCK,"Z"}, //ZULU
+  { 30, 40,740, 70,1,&SMALL_BLOCK,"L"}, //L
+  { 30, 40,740,131,1,&SMALL_BLOCK,"R"}, //R
 };
 
 void create_display_elements(){
@@ -178,17 +167,19 @@ void create_display_elements(){
   THREED.createSprite(display_elements[RPML].sprite_width, display_elements[RPML].sprite_hight);
   THREED.setFont(&segmentsa42);
   THREED.setColorDepth(24);
+  THREED.setTextWrap(false);
   THREED.setTextColor(ifei_color);
   
   LABELS.createSprite(display_elements[RPMT].sprite_width, display_elements[RPMT].sprite_hight);
-  //LABELS.setFont(&segments26);
+  LABELS.setFont(&nirmala_font);
   //LABELS.setTextSize(0.5);
   LABELS.setColorDepth(24);
   LABELS.setTextColor(ifei_color);
 
-  CLOCK.createSprite(230, 56);
+  CLOCK.createSprite(display_elements[CLOCKU].sprite_width, display_elements[CLOCKU].sprite_hight);
   CLOCK.setFont(&segmentsa42);
   CLOCK.setColorDepth(24);
+  CLOCK.setTextWrap(false);
   CLOCK.setTextColor(ifei_color);
 
   NOZL_IMAGE.createSprite(display_elements[NOZL].sprite_width, display_elements[NOZL].sprite_hight);
@@ -198,26 +189,59 @@ void create_display_elements(){
   SMALL_BLOCK.createSprite(20, 20);
 }
 
+void listDir(fs::FS &fs, const char * dirname, uint8_t levels){
+   Serial.printf("Listing directory: %s\r\n", dirname);
 
+   File root = fs.open(dirname);
+   if(!root){
+      Serial.println("− failed to open directory");
+      return;
+   }
+   if(!root.isDirectory()){
+      Serial.println(" − not a directory");
+      return;
+   }
 
-int set_textalignment(LGFX_Sprite sprite,const char* value, int alignment, bool is_label){
+   File file = root.openNextFile();
+   while(file){
+      if(file.isDirectory()){
+         Serial.print("  DIR : ");
+         Serial.println(file.name());
+         if(levels){
+            listDir(fs, file.name(), levels -1);
+         }
+      } else {
+         Serial.print("  FILE: ");
+         Serial.print(file.name());
+         Serial.print("\tSIZE: ");
+         Serial.println(file.size());
+      }
+      file = root.openNextFile();
+   }
+}
+
+int set_textalignment(int element,int alignment, bool is_label){
   //alignment 0=left; 1=middle; 2=right
   int fontwidth=0;
   int sprite_width=0;
-  for (int i=0; i < strlen(value);i++){
-    if (is_label){
-      fontwidth += (segments26.max_char_width() + 2)/2;
-      sprite_width = 45;
+  for (const char* ptr = display_elements[element].value; *ptr != '\0'; ++ptr){
+    if ( element != 15 || element != 16){
+      if (!std::isspace(static_cast<unsigned char>(*ptr))) {
+        if (element == RPMT || element == TMPT || element == FFT ||  element == NOZT || element == OILT  ){
+          fontwidth += (segments26.max_char_width() + 2)/2;    
+        }else{
+          fontwidth += segmentsa42.max_char_width() + 2;
+        }  
+      }
     }else{
-      fontwidth += segmentsa42.max_char_width() + 2;
-      sprite_width = 110; //&sprite.getWidth();
-    }  
+        fontwidth += segmentsa42.max_char_width();
+    }
   }
-   
-  if (alignment == 0){
-    return sprite_width - fontwidth;
+
+  if (alignment == 2){
+    return display_elements[element].sprite_width - fontwidth;
   }else if (alignment == 1){
-    return (sprite_width - fontwidth)/2;
+    return (display_elements[element].sprite_width - fontwidth)/2;
   }else{
     return 0;
   }
@@ -234,14 +258,18 @@ void update_element(const char* value,int element){
 }
 */
 
-void update_element(const char* value,int element){
-  int x1 = set_textalignment(display_elements[element].sprite, value, display_elements[element].textalign, false);
+void update_element(int element){
+  int x1 = set_textalignment(element, display_elements[element].textalign, false);
   
   display_elements[element].sprite->clear();
-  display_elements[element].sprite->setCursor(x1,2);
-  //display_elements[element].sprite.setTextColor(ifei_color);
-  display_elements[element].sprite->print(value);
+  display_elements[element].sprite->setCursor(x1,1);
+  if ( element == FUELU || element == FUELL || element == BINGO ){
+    display_elements[element].sprite->setFont(&segmentsa42);
+  }
+  display_elements[element].sprite->setTextColor(ifei_color);
+  display_elements[element].sprite->print(display_elements[element].value);
   display_elements[element].sprite->pushSprite(display_elements[element].pos_x,display_elements[element].pos_y);
+  
 }
 
 /*
@@ -288,99 +316,101 @@ void update_Clock(int element){
   }else{
      TIME = LC_H + LC_Dd1 + LC_M + LC_Dd2 + LC_S;
   }
- int x1 = set_textalignment(display_elements[element].sprite, TIME.c_str(),2, false);
-
+ display_elements[element].value = TIME.c_str();
+  
   display_elements[element].sprite->clear();
   display_elements[element].sprite->setCursor(1,1);
+  display_elements[element].sprite->setFont(&clock28_font);
   display_elements[element].sprite->print(TIME);
   display_elements[element].sprite->pushSprite(display_elements[element].pos_x,display_elements[element].pos_y);
 }
 
-void update_nozzel(String FILE,int NOZ_X,int NOZ_Y){
-  String filename = "/" + NOZL_PATH + "/" + FILE;
-
-  NOZL_IMAGE.drawBmp(SD, filename.c_str(), 0, 0);
-  NOZL_IMAGE.pushSprite(NOZ_X,NOZ_Y);
-  update_element(nozT_value,NOZT);
+void update_nozzel(int element){
+  String filename = "/" + NOZL_PATH + "/" + display_elements[element].value;
+  //NOZL_IMAGE.drawBmp(SD, filename.c_str(), 0, 0);
+  
+  NOZL_IMAGE.drawBmp(SPIFFS, filename.c_str(), 0, 0);
+  NOZL_IMAGE.pushSprite(display_elements[element].pos_x,display_elements[element].pos_y);
+  update_element(NOZT);
 }
 
-void update_SMALLBLOCK(const char* value,int x, int y){
-  SMALL_BLOCK.clear();
-  SMALL_BLOCK.setCursor(1,1);
-  SMALL_BLOCK.print(value);
-  SMALL_BLOCK.pushSprite(x,y);
-}
 
   
 
 //################## RPM  ##################Y
 void onIfeiRpmLChange(char* newValue) {
-  RPML_v = atol(newValue);
-  update_element(newValue,RPML);
+  display_elements[RPML].value = newValue;
+  update_element(RPML);
  
 }
 DcsBios::StringBuffer<3> ifeiRpmLBuffer(0x749e, onIfeiRpmLChange);
 
 void onIfeiRpmRChange(char* newValue) {
-  RPMR_v = atol(newValue);  
-  update_element(newValue,RPMR);
+  display_elements[RPMR].value = newValue;
+  update_element(RPMR);
 
 }
 DcsBios::StringBuffer<3> ifeiRpmRBuffer(0x74a2, onIfeiRpmRChange);
 
 void onIfeiRpmTextureChange(char* newValue) {
   if (strcmp(newValue, "1") == 0) {
-    update_element("RPM",RPMT);
+    display_elements[RPMT].value = "RPM";
+    update_element(RPMT);
   }
   else if (strcmp(newValue, "0") == 0) {
-    update_element("   ",RPMT);
+    display_elements[RPMT].value = "   ";
+    update_element(RPMT);
   }
 }
 DcsBios::StringBuffer<1> ifeiRpmTextureBuffer(0x74bc, onIfeiRpmTextureChange);
 
 //################## TEMP  ##################Y
 void onIfeiTempLChange(char* newValue) {
-  TMPL_v = atol(newValue);
-  update_element(newValue,TMPL);
+  display_elements[TMPL].value = newValue;
+  update_element(TMPL);
    
 }
 DcsBios::StringBuffer<3> ifeiTempLBuffer(0x74a6, onIfeiTempLChange);
 
 void onIfeiTempRChange(char* newValue) {
-  TMPR_v = atol(newValue);
-  update_element(newValue,TMPR);
+  display_elements[TMPR].value = newValue;
+  update_element(TMPR);
 }
 DcsBios::StringBuffer<3> ifeiTempRBuffer(0x74aa, onIfeiTempRChange);
 
 void onIfeiTempTextureChange(char* newValue) {
   if (strcmp(newValue, "1") == 0) {
-    update_element("TEMP",TMPT);
+    display_elements[TMPT].value = "TEMP";
+    update_element(TMPT);
   }
   else if (strcmp(newValue, "0") == 0) {
-    update_element("    ",TMPT);
+    display_elements[TMPT].value = "    ";
+    update_element(TMPT);
   }
 }
 DcsBios::StringBuffer<1> ifeiTempTextureBuffer(0x74be, onIfeiTempTextureChange);
 
 //################## FUEL FLOW LEFT ##################Y
 void onIfeiFfLChange(char* newValue) {
-  FFXL_v = atol(newValue);
-  update_element(newValue,FFL);
+  display_elements[FFL].value = newValue;
+  update_element(FFL);
 }
 DcsBios::StringBuffer<3> ifeiFfLBuffer(0x7482, onIfeiFfLChange);
 //################## FUEL FLOW RIGHT ##################Y
 void onIfeiFfRChange(char* newValue) {
-  FFXR_v = atol(newValue);
-  update_element(newValue,FFR);
+  display_elements[FFR].value = newValue;
+  update_element(FFR);
 }
 DcsBios::StringBuffer<3> ifeiFfRBuffer(0x7486, onIfeiFfRChange);
 //################## FUEL FLOW TEXTURE ##################Y
 void onIfeiFfTextureChange(char* newValue) {
   if (strcmp(newValue, "1") == 0) {
-      update_element(" FF \nX100",FFT);
+    display_elements[FFT].value = " FF \nX100";
+    update_element(FFT);
   }
   else if (strcmp(newValue, "0") == 0) {
-        update_element("  \n  ",FFT);
+    display_elements[FFT].value = "    \n    ";
+    update_element(FFT);
   }
 }
 DcsBios::StringBuffer<1> ifeiFfTextureBuffer(0x74c0, onIfeiFfTextureChange);
@@ -388,30 +418,30 @@ DcsBios::StringBuffer<1> ifeiFfTextureBuffer(0x74c0, onIfeiFfTextureChange);
 //################## OIL ##################Y
 
 void onIfeiOilPressLChange(char* newValue) {
-  OILL_v = atol(newValue);
-  update_element(newValue,OILL);
+  display_elements[OILL].value = newValue;
+  update_element(OILL);
 }
 DcsBios::StringBuffer<3> ifeiOilPressLBuffer(0x7496, onIfeiOilPressLChange);
 
 void onIfeiOilPressRChange(char* newValue) {
-  OILR_v = atol(newValue);
-  update_element(newValue,OILR);
+  display_elements[OILR].value = newValue;
+  update_element(OILR);
 }
 DcsBios::StringBuffer<3> ifeiOilPressRBuffer(0x749a, onIfeiOilPressRChange);
 
 void onIfeiOilTextureChange(char* newValue) {
   
   if (strcmp(newValue, "1") == 0) {
-    oilT_value="OIL";
-    nozT_value="NOZ";
+    display_elements[OILT].value ="OIL";
+    display_elements[NOZT].value ="NOZ";
    
   }
   else if (strcmp(newValue, "0") == 0) {
-    oilT_value="   ";
-    nozT_value="   ";
+    display_elements[OILT].value ="   ";
+    display_elements[NOZT].value ="   ";
   }
-  update_element(oilT_value,OILT);
-  update_element(nozT_value,NOZT);
+  update_element(OILT);
+  update_element(NOZT);
 }
 DcsBios::StringBuffer<1> ifeiOilTextureBuffer(0x74c4, onIfeiOilTextureChange);
 
@@ -424,20 +454,19 @@ int NOZL_v_OLD = 0;
 void onExtNozzlePosLChange(unsigned int newValue) {
    NOZL_v = map(newValue, 0, 65535, 0, 100);
    if (NOZL_v != NOZL_v_OLD){
-    Serial.print("NOZL: ");Serial.println(NOZL);
     NOZL_v_OLD = NOZL_v;
-    switch (NOZL) { // NOZ LEFT POSITION IFEI
-      case 0 ... 9:    update_nozzel("L0.bmp",display_elements[NOZL].pos_x,display_elements[NOZL].pos_y); break;
-      case 10 ... 19:  update_nozzel("L10.bmp",display_elements[NOZL].pos_x,display_elements[NOZL].pos_y); break;
-      case 20 ... 29:  update_nozzel("L20.bmp",display_elements[NOZL].pos_x,display_elements[NOZL].pos_y); break;
-      case 30 ... 39:  update_nozzel("L30.bmp",display_elements[NOZL].pos_x,display_elements[NOZL].pos_y); break;
-      case 40 ... 49:  update_nozzel("L40.bmp",display_elements[NOZL].pos_x,display_elements[NOZL].pos_y); break;
-      case 50 ... 59:  update_nozzel("L50.bmp",display_elements[NOZL].pos_x,display_elements[NOZL].pos_y); break;
-      case 60 ... 69:  update_nozzel("L60.bmp",display_elements[NOZL].pos_x,display_elements[NOZL].pos_y); break;
-      case 70 ... 79:  update_nozzel("L70.bmp",display_elements[NOZL].pos_x,display_elements[NOZL].pos_y); break;
-      case 80 ... 89:  update_nozzel("L80.bmp",display_elements[NOZL].pos_x,display_elements[NOZL].pos_y); break;
-      case 90 ... 95:  update_nozzel("L90.bmp",display_elements[NOZL].pos_x,display_elements[NOZL].pos_y); break;
-      case 96 ... 100: update_nozzel("100.bmp",display_elements[NOZL].pos_x,display_elements[NOZL].pos_y); break;
+    switch (NOZL_v) { // NOZ LEFT POSITION IFEI
+      case 0 ... 4:    display_elements[NOZL].value = "L0.bmp"; update_nozzel(NOZL); break;
+      case 5 ... 14:  display_elements[NOZL].value = "L10.bmp"; update_nozzel(NOZL); break;
+      case 15 ... 24:  display_elements[NOZL].value = "L20.bmp"; update_nozzel(NOZL); break;
+      case 25 ... 34:  display_elements[NOZL].value = "L30.bmp"; update_nozzel(NOZL); break;
+      case 35 ... 44:  display_elements[NOZL].value = "L40.bmp"; update_nozzel(NOZL); break;
+      case 45 ... 54:  display_elements[NOZL].value = "L50.bmp"; update_nozzel(NOZL); break;
+      case 55 ... 64:  display_elements[NOZL].value = "L60.bmp"; update_nozzel(NOZL); break;
+      case 65 ... 74:  display_elements[NOZL].value = "L70.bmp"; update_nozzel(NOZL); break;
+      case 75 ... 84:  display_elements[NOZL].value = "L80.bmp"; update_nozzel(NOZL); break;
+      case 85 ... 94:  display_elements[NOZL].value = "L90.bmp"; update_nozzel(NOZL); break;
+      case 95 ... 100: display_elements[NOZL].value = "L100.bmp"; update_nozzel(NOZL); break;
     }
    }
 }
@@ -451,22 +480,23 @@ int NOZR_v = 0;
 int NOZR_v_OLD = 0;
 void onExtNozzlePosRChange(unsigned int newValue) {
    NOZR_v = map(newValue, 0, 65535, 0, 100);
-   if (NOZR_v != NOZR_v_OLD){
-    NOZR_v_OLD = NOZR_v;
-    switch (NOZR) { // NOZ RIGHT POSITION IFEI
-      case 0 ... 9:    update_nozzel("R0.bmp",display_elements[NOZR].pos_x,display_elements[NOZR].pos_y); break;
-      case 10 ... 19:  update_nozzel("R10.bmp",display_elements[NOZR].pos_x,display_elements[NOZR].pos_y); break;
-      case 20 ... 29:  update_nozzel("R20.bmp",display_elements[NOZR].pos_x,display_elements[NOZR].pos_y); break;
-      case 30 ... 39:  update_nozzel("R30.bmp",display_elements[NOZR].pos_x,display_elements[NOZR].pos_y); break;
-      case 40 ... 49:  update_nozzel("R40.bmp",display_elements[NOZR].pos_x,display_elements[NOZR].pos_y); break;
-      case 50 ... 59:  update_nozzel("R50.bmp",display_elements[NOZR].pos_x,display_elements[NOZR].pos_y); break;
-      case 60 ... 69:  update_nozzel("R60.bmp",display_elements[NOZR].pos_x,display_elements[NOZR].pos_y); break;
-      case 70 ... 79:  update_nozzel("R70.bmp",display_elements[NOZR].pos_x,display_elements[NOZR].pos_y); break;
-      case 80 ... 89:  update_nozzel("R80.bmp",display_elements[NOZR].pos_x,display_elements[NOZR].pos_y); break;
-      case 90 ... 95:  update_nozzel("R90.bmp",display_elements[NOZR].pos_x,display_elements[NOZR].pos_y); break;
-      case 96 ... 100: update_nozzel("100.bmp",display_elements[NOZR].pos_x,display_elements[NOZR].pos_y); break;
+  // if (NOZR_v != NOZR_v_OLD){
+   // NOZR_v_OLD = NOZR_v;
+    Serial.print("NOZ: ");Serial.println(NOZR_v);
+    switch (NOZR_v) { // NOZ RIGHT POSITION IFEI
+      case 0 ... 4:    display_elements[NOZR].value = "R0.bmp"; update_nozzel(NOZR); break;
+      case 5 ... 14:  display_elements[NOZR].value = "R10.bmp"; update_nozzel(NOZR); break;
+      case 15 ... 24:  display_elements[NOZR].value = "R20.bmp"; update_nozzel(NOZR); break;
+      case 25 ... 34:  display_elements[NOZR].value = "R30.bmp"; update_nozzel(NOZR); break;
+      case 35 ... 44:  display_elements[NOZR].value = "R40.bmp"; update_nozzel(NOZR); break;
+      case 45 ... 54:  display_elements[NOZR].value = "R50.bmp"; update_nozzel(NOZR); break;
+      case 55 ... 64:  display_elements[NOZR].value = "R60.bmp"; update_nozzel(NOZR); break;
+      case 65 ... 74:  display_elements[NOZR].value = "R70.bmp"; update_nozzel(NOZR); break;
+      case 75 ... 84:  display_elements[NOZR].value = "R80.bmp"; update_nozzel(NOZR); break;
+      case 85 ... 94:  display_elements[NOZR].value = "R90.bmp"; update_nozzel(NOZR); break;
+      case 95 ... 100: display_elements[NOZR].value = "R100.bmp"; update_nozzel(NOZR); break;
     }
-   }
+   //}
 }
 
 DcsBios::IntegerBuffer extNozzlePosRBuffer(0x7578, 0xffff, 0, onExtNozzlePosRChange);
@@ -491,6 +521,7 @@ void onCockkpitLightModeSwChange(unsigned int newValue) {
     NOZL_PATH = "Green";
     ifei_color = color_NIGHT;
     
+    
     /*
     threeD.setTextColor(0x1CDD2AU);
     labels.setTextColor(0x1CDD2AU);
@@ -502,6 +533,7 @@ void onCockkpitLightModeSwChange(unsigned int newValue) {
   if (ifeiCol == 0) {
     NOZL_PATH = "White";
     ifei_color = color_day;
+     
     /*
     threeD.setTextColor(0xFFFFFFU);
     labels.setTextColor(0xFFFFFFU);
@@ -510,6 +542,17 @@ void onCockkpitLightModeSwChange(unsigned int newValue) {
     CLOCK.setTextColor(0xFFFFFFU);
     */
   }
+
+  for ( int i = 0; i < 24; i++ ){
+      if ( i == NOZL || i == NOZR){
+        update_nozzel(i);
+      }else{
+        update_element(i);
+      }
+  }
+
+  update_Clock(CLOCKU);
+  update_Clock(CLOCKL);
 }
  
 DcsBios::IntegerBuffer cockkpitLightModeSwBuffer(0x74c8, 0x0600, 9, onCockkpitLightModeSwChange);
@@ -517,30 +560,34 @@ DcsBios::IntegerBuffer cockkpitLightModeSwBuffer(0x74c8, 0x0600, 9, onCockkpitLi
 //################## FUEL LOWER ##################
 
 void onIfeiFuelDownChange(char* newValue) {
-  update_element(newValue,FUELL);
+  display_elements[FUELL].value = newValue;
+  update_element(FUELL);
 }
 DcsBios::StringBuffer<6> ifeiFuelDownBuffer(0x748a, onIfeiFuelDownChange);
 
 void onIfeiTimeSetModeChange(char* newValue) {
-    update_element(newValue,FUELL);
+  display_elements[FUELL].value = newValue;
+  update_element(FUELL);
 }
 DcsBios::StringBuffer<6> ifeiTimeSetModeBuffer(0x74b6, onIfeiTimeSetModeChange);
 
 //################# FUEL UPPER ##################
 void onIfeiFuelUpChange(char* newValue) {
-   update_element(newValue,FUELU);
+  display_elements[FUELU].value = newValue;
+   update_element(FUELU);
 }
 DcsBios::StringBuffer<6> ifeiFuelUpBuffer(0x7490, onIfeiFuelUpChange);
 
-void onIfeiTChange(char* newValue) {
-    update_element(newValue,FUELU);
+/*void onIfeiTChange(char* newValue) {
+  display_elements[FUELU].value = newValue;
+  update_element(FUELU);
 }
 DcsBios::StringBuffer<6> ifeiTBuffer(0x757c, onIfeiTChange);
-
+*/
 //################## BINGO ################## Y
 void onIfeiBingoChange(char* newValue) {
-  BINGO_v = atol(newValue);
-  update_element(newValue,BINGO);
+  display_elements[BINGO].value = newValue;
+  update_element(BINGO);
 }
 DcsBios::StringBuffer<5> ifeiBingoBuffer(0x7468, onIfeiBingoChange);
 
@@ -579,10 +626,12 @@ DcsBios::StringBuffer<2> ifeiClockSBuffer(0x7472, onIfeiClockSChange);
 ///////////// ZULU Texture ///////////////////////
 void onIfeiZTextureChange(char* newValue) {
   if (strcmp(newValue, "1") == 0) {
-    update_element("Z",ZULU);
+    display_elements[ZULU].value = "Z";
+    update_element(ZULU);
   }
   else if (strcmp(newValue, "0") == 0) {
-    update_element(" ",ZULU);
+    display_elements[ZULU].value = " ";
+    update_element(ZULU);
   }
 }
 DcsBios::StringBuffer<1> ifeiZTextureBuffer(0x74dc, onIfeiZTextureChange);
@@ -639,12 +688,14 @@ void setup(void) {
 
 
   Serial.begin(115200);
-  //Serial.print("PanelLan_RGB_CLK_FREQ: ");Serial.println(PanelLan_RGB_CLK_FREQ);
 
-  SDCARD_SPI.begin(SCK, MISO, MOSI, CS);
-  SD.begin(CS,SDCARD_SPI,40000000);
+  //SDCARD_SPI.begin(SCK, MISO, MOSI, CS);
+  //SD.begin(CS,SDCARD_SPI,40000000);
   
-
+if(!SPIFFS.begin(true)){
+    Serial.println("An Error has occurred while mounting SPIFFS");
+    return;
+  }
 
 
   tft.setColorDepth(24);
@@ -654,36 +705,17 @@ void setup(void) {
   
 
 
+ for (int i=0; i < 19; i++){
+    if ( i == 12 || i == 13 ){
+      update_nozzel(i);
+    }else{
+      update_element(i);
+    }
+ }
  
- //Display Demo values
-  //RPM 
-    update_element("0",RPML);
-    update_element("0",RPMR);
-    update_element("RPM",RPMT);
-  //TEMP
-  
-    update_element("0",TMPL);
-    update_element("0",TMPL);
-    update_element("TEMP",TMPT);
-
-  //Fuel flow
-    update_element("0",FFL);
-    update_element("0",FFR);
-    update_element(" FF \nX100",FFT);
-  // OIL
-    update_element("0",OILL);
-    update_element("0",OILR);
-    update_element("OIL",OILT);
-  // FUEL
-    update_element("12345T",FUELU);
-    update_element("54321I",FUELL);
-  // Bingo
-    update_element("12345", BINGO);
-  //LGauge
-  //print_LGauge(75,245);
   update_Clock(CLOCKU);
   update_Clock(CLOCKL);
-  
+  listDir(SPIFFS, "/White", 0);
 }
 
 
