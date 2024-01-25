@@ -151,8 +151,8 @@ display_element display_elements[24]= {
   {110, 56, 58,400,2,&THREED,"0"}, //OILL
   {110, 56,260,400,0,&THREED,"0"}, //OILR
   { 65, 70,180,400,1,&LABELS,"OIL"}, //OILT
-  {150,154, 58,230,0,&NOZL_IMAGE,"L0.bmp"}, //NOZL
-  {150,154,211,230,0,&NOZL_IMAGE,"R0.bmp"}, //NOZR
+  {150,154, 58,230,0,&NOZL_IMAGE,"L0.jpg"}, //NOZL
+  {150,154,211,230,0,&NOZL_IMAGE,"R0.jpg"}, //NOZR
   { 65, 70,180,300,1,&LABELS,"NOZ"}, //NOZT
   {190, 56,560, 30,2,&CLOCK,"0"}, //FUELU
   {190, 56,560, 85,2,&CLOCK,"0"}, //FUELL
@@ -170,7 +170,7 @@ void create_display_elements(){
  
 // Create Sprites
   THREED.createSprite(display_elements[RPML].sprite_width, display_elements[RPML].sprite_hight);
-  THREED.loadFont(SPIFFS,"/IFEI-Data-40.vlw");
+  THREED.loadFont(SPIFFS,"/Fonts/IFEI-Data-40.vlw");
   THREED.setFont(THREED.getFont());
   //THREED.setFont(&segmentsa42);
   THREED.setColorDepth(24);
@@ -178,7 +178,7 @@ void create_display_elements(){
   THREED.setTextColor(ifei_color);
   
   LABELS.createSprite(display_elements[RPMT].sprite_width, display_elements[RPMT].sprite_hight);
-  LABELS.loadFont(SPIFFS,"/IFEI-Labels-20.vlw");
+  LABELS.loadFont(SPIFFS,"/Fonts/IFEI-Labels-20.vlw");
   //const lgfx::v1::IFont* test_font = LABELS.getFont();
 
   //test(LABELS.getFont());
@@ -189,7 +189,7 @@ void create_display_elements(){
   LABELS.setTextColor(ifei_color);
   
   CLOCK.createSprite(display_elements[CLOCKU].sprite_width, display_elements[CLOCKU].sprite_hight);
-  CLOCK.loadFont(SPIFFS,"/IFEI-Data-40.vlw");
+  CLOCK.loadFont(SPIFFS,"/Fonts/IFEI-Data-40.vlw");
   CLOCK.setFont(CLOCK.getFont());
   CLOCK.setColorDepth(24);
   CLOCK.setTextWrap(false);
@@ -473,29 +473,29 @@ void onExtNozzlePosLChange(unsigned int newValue) {
    if (NOZL_v != NOZL_v_OLD){
     NOZL_v_OLD = NOZL_v;
     switch (NOZL_v) { // NOZ LEFT POSITION IFEI
-      /*case 0 ... 4:    display_elements[NOZL].value = "L0.bmp"; update_nozzel(NOZL); break;
-      case 5 ... 14:  display_elements[NOZL].value = "L10.bmp"; update_nozzel(NOZL); break;
-      case 15 ... 24:  display_elements[NOZL].value = "L20.bmp"; update_nozzel(NOZL); break;
-      case 25 ... 34:  display_elements[NOZL].value = "L30.bmp"; update_nozzel(NOZL); break;
-      case 35 ... 44:  display_elements[NOZL].value = "L40.bmp"; update_nozzel(NOZL); break;
-      case 45 ... 54:  display_elements[NOZL].value = "L50.bmp"; update_nozzel(NOZL); break;
-      case 55 ... 64:  display_elements[NOZL].value = "L60.bmp"; update_nozzel(NOZL); break;
-      case 65 ... 74:  display_elements[NOZL].value = "L70.bmp"; update_nozzel(NOZL); break;
-      case 75 ... 84:  display_elements[NOZL].value = "L80.bmp"; update_nozzel(NOZL); break;
-      case 85 ... 94:  display_elements[NOZL].value = "L90.bmp"; update_nozzel(NOZL); break;
-      case 95 ... 100: display_elements[NOZL].value = "L100.bmp"; update_nozzel(NOZL); break;
+      /*case 0 ... 4:    display_elements[NOZL].value = "L0.jpg"; update_nozzel(NOZL); break;
+      case 5 ... 14:  display_elements[NOZL].value = "L10.jpg"; update_nozzel(NOZL); break;
+      case 15 ... 24:  display_elements[NOZL].value = "L20.jpg"; update_nozzel(NOZL); break;
+      case 25 ... 34:  display_elements[NOZL].value = "L30.jpg"; update_nozzel(NOZL); break;
+      case 35 ... 44:  display_elements[NOZL].value = "L40.jpg"; update_nozzel(NOZL); break;
+      case 45 ... 54:  display_elements[NOZL].value = "L50.jpg"; update_nozzel(NOZL); break;
+      case 55 ... 64:  display_elements[NOZL].value = "L60.jpg"; update_nozzel(NOZL); break;
+      case 65 ... 74:  display_elements[NOZL].value = "L70.jpg"; update_nozzel(NOZL); break;
+      case 75 ... 84:  display_elements[NOZL].value = "L80.jpg"; update_nozzel(NOZL); break;
+      case 85 ... 94:  display_elements[NOZL].value = "L90.jpg"; update_nozzel(NOZL); break;
+      case 95 ... 100: display_elements[NOZL].value = "L100.jpg"; update_nozzel(NOZL); break;
       */
-     case 0 ... 4:    display_elements[NOZL].value = "L0.bmp"; update_nozzel(NOZL); break;
-      case 5 ... 14:  display_elements[NOZL].value = "L10.bmp"; update_nozzel(NOZL); break;
-      case 15 ... 24:  display_elements[NOZL].value = "L20.bmp"; update_nozzel(NOZL); break;
-      case 25 ... 34:  display_elements[NOZL].value = "L30.bmp"; update_nozzel(NOZL); break;
-      case 35 ... 44:  display_elements[NOZL].value = "L40.bmp"; update_nozzel(NOZL); break;
-      case 45 ... 54:  display_elements[NOZL].value = "L50.bmp"; update_nozzel(NOZL); break;
-      case 55 ... 64:  display_elements[NOZL].value = "L60.bmp"; update_nozzel(NOZL); break;
-      case 65 ... 74:  display_elements[NOZL].value = "L70.bmp"; update_nozzel(NOZL); break;
-      case 75 ... 84:  display_elements[NOZL].value = "L80.bmp"; update_nozzel(NOZL); break;
-      case 85 ... 94:  display_elements[NOZL].value = "L90.bmp"; update_nozzel(NOZL); break;
-      case 95 ... 100: display_elements[NOZL].value = "L100.bmp"; update_nozzel(NOZL); break;
+     case 0 ... 4:    display_elements[NOZL].value = "L0.jpg"; update_nozzel(NOZL); break;
+      case 5 ... 14:  display_elements[NOZL].value = "L10.jpg"; update_nozzel(NOZL); break;
+      case 15 ... 24:  display_elements[NOZL].value = "L20.jpg"; update_nozzel(NOZL); break;
+      case 25 ... 34:  display_elements[NOZL].value = "L30.jpg"; update_nozzel(NOZL); break;
+      case 35 ... 44:  display_elements[NOZL].value = "L40.jpg"; update_nozzel(NOZL); break;
+      case 45 ... 54:  display_elements[NOZL].value = "L50.jpg"; update_nozzel(NOZL); break;
+      case 55 ... 64:  display_elements[NOZL].value = "L60.jpg"; update_nozzel(NOZL); break;
+      case 65 ... 74:  display_elements[NOZL].value = "L70.jpg"; update_nozzel(NOZL); break;
+      case 75 ... 84:  display_elements[NOZL].value = "L80.jpg"; update_nozzel(NOZL); break;
+      case 85 ... 94:  display_elements[NOZL].value = "L90.jpg"; update_nozzel(NOZL); break;
+      case 95 ... 100: display_elements[NOZL].value = "L100.jpg"; update_nozzel(NOZL); break;
     }
    }
 }
@@ -514,29 +514,29 @@ void onExtNozzlePosRChange(unsigned int newValue) {
 
     switch (NOZR_v) { // NOZ RIGHT POSITION IFEI
     /*
-      case 0 ... 4:    display_elements[NOZR].value = "R0.bmp"; update_nozzel(NOZR); break;
-      case 5 ... 14:  display_elements[NOZR].value = "R10.bmp"; update_nozzel(NOZR); break;
-      case 15 ... 24:  display_elements[NOZR].value = "R20.bmp"; update_nozzel(NOZR); break;
-      case 25 ... 34:  display_elements[NOZR].value = "R30.bmp"; update_nozzel(NOZR); break;
-      case 35 ... 44:  display_elements[NOZR].value = "R40.bmp"; update_nozzel(NOZR); break;
-      case 45 ... 54:  display_elements[NOZR].value = "R50.bmp"; update_nozzel(NOZR); break;
-      case 55 ... 64:  display_elements[NOZR].value = "R60.bmp"; update_nozzel(NOZR); break;
-      case 65 ... 74:  display_elements[NOZR].value = "R70.bmp"; update_nozzel(NOZR); break;
-      case 75 ... 84:  display_elements[NOZR].value = "R80.bmp"; update_nozzel(NOZR); break;
-      case 85 ... 94:  display_elements[NOZR].value = "R90.bmp"; update_nozzel(NOZR); break;
-      case 95 ... 100: display_elements[NOZR].value = "R100.bmp"; update_nozzel(NOZR); break;
+      case 0 ... 4:    display_elements[NOZR].value = "R0.jpg"; update_nozzel(NOZR); break;
+      case 5 ... 14:  display_elements[NOZR].value = "R10.jpg"; update_nozzel(NOZR); break;
+      case 15 ... 24:  display_elements[NOZR].value = "R20.jpg"; update_nozzel(NOZR); break;
+      case 25 ... 34:  display_elements[NOZR].value = "R30.jpg"; update_nozzel(NOZR); break;
+      case 35 ... 44:  display_elements[NOZR].value = "R40.jpg"; update_nozzel(NOZR); break;
+      case 45 ... 54:  display_elements[NOZR].value = "R50.jpg"; update_nozzel(NOZR); break;
+      case 55 ... 64:  display_elements[NOZR].value = "R60.jpg"; update_nozzel(NOZR); break;
+      case 65 ... 74:  display_elements[NOZR].value = "R70.jpg"; update_nozzel(NOZR); break;
+      case 75 ... 84:  display_elements[NOZR].value = "R80.jpg"; update_nozzel(NOZR); break;
+      case 85 ... 94:  display_elements[NOZR].value = "R90.jpg"; update_nozzel(NOZR); break;
+      case 95 ... 100: display_elements[NOZR].value = "R100.jpg"; update_nozzel(NOZR); break;
     */
-      case 0 ... 4:    display_elements[NOZR].value = "R0.bmp"; update_nozzel(NOZR); break;
-      case 5 ... 14:  display_elements[NOZR].value = "R10.bmp"; update_nozzel(NOZR); break;
-      case 15 ... 24:  display_elements[NOZR].value = "R20.bmp"; update_nozzel(NOZR); break;
-      case 25 ... 34:  display_elements[NOZR].value = "R30.bmp"; update_nozzel(NOZR); break;
-      case 35 ... 44:  display_elements[NOZR].value = "R40.bmp"; update_nozzel(NOZR); break;
-      case 45 ... 54:  display_elements[NOZR].value = "R50.bmp"; update_nozzel(NOZR); break;
-      case 55 ... 64:  display_elements[NOZR].value = "R60.bmp"; update_nozzel(NOZR); break;
-      case 65 ... 74:  display_elements[NOZR].value = "R70.bmp"; update_nozzel(NOZR); break;
-      case 75 ... 84:  display_elements[NOZR].value = "R80.bmp"; update_nozzel(NOZR); break;
-      case 85 ... 94:  display_elements[NOZR].value = "R90.bmp"; update_nozzel(NOZR); break;
-      case 95 ... 100: display_elements[NOZR].value = "R100.bmp"; update_nozzel(NOZR); break;
+      case 0 ... 4:    display_elements[NOZR].value = "R0.jpg"; update_nozzel(NOZR); break;
+      case 5 ... 14:  display_elements[NOZR].value = "R10.jpg"; update_nozzel(NOZR); break;
+      case 15 ... 24:  display_elements[NOZR].value = "R20.jpg"; update_nozzel(NOZR); break;
+      case 25 ... 34:  display_elements[NOZR].value = "R30.jpg"; update_nozzel(NOZR); break;
+      case 35 ... 44:  display_elements[NOZR].value = "R40.jpg"; update_nozzel(NOZR); break;
+      case 45 ... 54:  display_elements[NOZR].value = "R50.jpg"; update_nozzel(NOZR); break;
+      case 55 ... 64:  display_elements[NOZR].value = "R60.jpg"; update_nozzel(NOZR); break;
+      case 65 ... 74:  display_elements[NOZR].value = "R70.jpg"; update_nozzel(NOZR); break;
+      case 75 ... 84:  display_elements[NOZR].value = "R80.jpg"; update_nozzel(NOZR); break;
+      case 85 ... 94:  display_elements[NOZR].value = "R90.jpg"; update_nozzel(NOZR); break;
+      case 95 ... 100: display_elements[NOZR].value = "R100.jpg"; update_nozzel(NOZR); break;
     }
    //}
 }
@@ -547,8 +547,8 @@ DcsBios::IntegerBuffer extNozzlePosRBuffer(0x7578, 0xffff, 0, onExtNozzlePosRCha
 /*
 void onIfeiRpointerTextureChange(char* newValue) {
   if (strcmp(newValue, "1") == 0) {
-    update_nozzel("LScale.bmp",NOZL_X,NOZL_Y);
-    update_nozzel("RScale.bmp",NOZR_X,NOZR_Y);
+    update_nozzel("LScale.jpg",NOZL_X,NOZL_Y);
+    update_nozzel("RScale.jpg",NOZR_X,NOZR_Y);
   }
 }
 DcsBios::StringBuffer<1> ifeiRpointerTextureBuffer(0x74da, onIfeiRpointerTextureChange);
@@ -763,8 +763,8 @@ void loop() {
   
   
   if (millis() - nozzle_update > 2000){
-      String NOZL_v = String('L') + String(i) + ".bmp";
-      String NOZR_v = String('R') + String(i) + ".bmp";
+      String NOZL_v = String('L') + String(i) + ".jpg";
+      String NOZR_v = String('R') + String(i) + ".jpg";
       display_elements[NOZL].value = NOZL_v.c_str();
       display_elements[NOZR].value = NOZR_v.c_str();
       update_nozzel(NOZL);
