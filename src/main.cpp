@@ -15,7 +15,10 @@ Change frequency in PanelLan_esp32_arduino/src/board/sc05/sc05.cpp to
 #include <FS.h>
 #include <SD.h>
 #include <SPI.h>
-#include "SPIFFS.h"
+//#include "SPIFFS.h"
+#include "LittleFS.h"
+
+#define SPIFFS LittleFS
 
 
 
@@ -37,7 +40,7 @@ Change frequency in PanelLan_esp32_arduino/src/board/sc05/sc05.cpp to
 
 
 
-SPIClass SDCARD_SPI = SPIClass(HSPI);
+//SPIClass SDCARD_SPI = SPIClass(HSPI);
 
  
 
@@ -59,7 +62,7 @@ String TC_M = "00";
 String TC_Dd2 = ":";
 String TC_S = "00";
 
-String LC_H = "00";
+String LC_H = "0";
 String LC_Dd1 = ":";
 String LC_M = "00";
 String LC_Dd2 = ":";
@@ -89,7 +92,9 @@ LGFX_Sprite SMALL_BLOCK(&tft);
 static const lgfx::U8g2font segments26( segments );
 static const lgfx::U8g2font segmentsa42( bdf_font );
 static const lgfx::U8g2font clock28_font( clock28 );
-static const lgfx::U8g2font nirmala_font( nirmala );
+static const lgfx::U8g2font nirmala_font( labels );
+
+
 
 
 struct display_element{
@@ -133,29 +138,29 @@ enum Display_Name{
 };
 
 display_element display_elements[24]= {
-  //width, hight, posx, posy, textalign
+  //{width, hight, posx, posy, textalign, sprite, value}
   {110, 56, 58, 20,2,&THREED,"012"}, //RPML
-  {110, 56,250, 20,0,&THREED,"345"}, //RPMR
-  { 55, 70,180, 20,1,&LABELS,"RPM"}, //RPMT
+  {110, 56,260, 20,0,&THREED,"345"}, //RPMR
+  { 65, 70,180, 20,1,&LABELS,"RPM"}, //RPMT
   {110, 56, 58, 85,2,&THREED,"678"}, //TMPL
-  {110, 56,250, 85,0,&THREED,"0"}, //TMPR
-  { 55, 70,180, 85,1,&LABELS,"TEMP"}, //TMPT
+  {110, 56,260, 85,0,&THREED,"0"}, //TMPR
+  { 65, 70,180, 85,1,&LABELS,"TEMP"}, //TMPT
   {110, 56, 58,160,2,&THREED,"0"}, //FFL
-  {110, 56,250,160,2,&THREED,"0"}, //FFR
-  { 55, 70,180,160,1,&LABELS," FF \nX100"}, //FFT
+  {110, 56,260,160,2,&THREED,"0"}, //FFR
+  { 65, 70,180,160,1,&LABELS," FF \nX100"}, //FFT
   {110, 56, 58,400,2,&THREED,"0"}, //OILL
-  {110, 56,250,400,0,&THREED,"0"}, //OILR
-  { 55, 70,180,400,1,&LABELS,"OIL"}, //OILT
-  {150,153, 58,230,0,&NOZL_IMAGE,"L0.bmp"}, //NOZL
-  {150,153,211,230,0,&NOZL_IMAGE,"R0.bmp"}, //NOZR
-  { 55, 70,180,300,1,&LABELS,"NOZ"}, //NOZT
-  {190, 56,550, 30,2,&CLOCK,"0"}, //FUELU
-  {190, 56,550, 85,2,&CLOCK,"0"}, //FUELL
-  {190, 56,550,215,2,&CLOCK,"0"}, //BINGO
-  { 55, 56,580,185,1,&LABELS,"BINGO"}, //BINGOT
-  {190, 56,550,310,0,&CLOCK,"0"}, //CLOCKU
-  {190, 56,550,375,0,&CLOCK,"0"}, //CLOCKL
-  { 30, 40,740,350,1,&SMALL_BLOCK,"Z"}, //ZULU
+  {110, 56,260,400,0,&THREED,"0"}, //OILR
+  { 65, 70,180,400,1,&LABELS,"OIL"}, //OILT
+  {150,154, 58,230,0,&NOZL_IMAGE,"L0.bmp"}, //NOZL
+  {150,154,211,230,0,&NOZL_IMAGE,"R0.bmp"}, //NOZR
+  { 65, 70,180,300,1,&LABELS,"NOZ"}, //NOZT
+  {190, 56,560, 30,2,&CLOCK,"0"}, //FUELU
+  {190, 56,560, 85,2,&CLOCK,"0"}, //FUELL
+  {190, 56,560,215,2,&CLOCK,"0"}, //BINGO
+  { 65, 56,600,185,1,&LABELS,"BINGO"}, //BINGOT
+  {190, 56,560,310,2,&CLOCK,"0"}, //CLOCKU
+  {190, 56,560,375,2,&CLOCK,"0"}, //CLOCKL
+  { 30, 40,740,360,1,&SMALL_BLOCK,"Z"}, //ZULU
   { 30, 40,740, 70,1,&SMALL_BLOCK,"L"}, //L
   { 30, 40,740,131,1,&SMALL_BLOCK,"R"}, //R
 };
@@ -165,19 +170,27 @@ void create_display_elements(){
  
 // Create Sprites
   THREED.createSprite(display_elements[RPML].sprite_width, display_elements[RPML].sprite_hight);
-  THREED.setFont(&segmentsa42);
+  THREED.loadFont(SPIFFS,"/IFEI-Data-40.vlw");
+  THREED.setFont(THREED.getFont());
+  //THREED.setFont(&segmentsa42);
   THREED.setColorDepth(24);
   THREED.setTextWrap(false);
   THREED.setTextColor(ifei_color);
   
   LABELS.createSprite(display_elements[RPMT].sprite_width, display_elements[RPMT].sprite_hight);
-  LABELS.setFont(&nirmala_font);
+  LABELS.loadFont(SPIFFS,"/IFEI-Labels-20.vlw");
+  //const lgfx::v1::IFont* test_font = LABELS.getFont();
+
+  //test(LABELS.getFont());
+  
+  LABELS.setFont(LABELS.getFont());
   //LABELS.setTextSize(0.5);
   LABELS.setColorDepth(24);
   LABELS.setTextColor(ifei_color);
-
+  
   CLOCK.createSprite(display_elements[CLOCKU].sprite_width, display_elements[CLOCKU].sprite_hight);
-  CLOCK.setFont(&segmentsa42);
+  CLOCK.loadFont(SPIFFS,"/IFEI-Data-40.vlw");
+  CLOCK.setFont(CLOCK.getFont());
   CLOCK.setColorDepth(24);
   CLOCK.setTextWrap(false);
   CLOCK.setTextColor(ifei_color);
@@ -189,59 +202,39 @@ void create_display_elements(){
   SMALL_BLOCK.createSprite(20, 20);
 }
 
-void listDir(fs::FS &fs, const char * dirname, uint8_t levels){
-   Serial.printf("Listing directory: %s\r\n", dirname);
 
-   File root = fs.open(dirname);
-   if(!root){
-      Serial.println("− failed to open directory");
-      return;
-   }
-   if(!root.isDirectory()){
-      Serial.println(" − not a directory");
-      return;
-   }
 
-   File file = root.openNextFile();
-   while(file){
-      if(file.isDirectory()){
-         Serial.print("  DIR : ");
-         Serial.println(file.name());
-         if(levels){
-            listDir(fs, file.name(), levels -1);
-         }
-      } else {
-         Serial.print("  FILE: ");
-         Serial.print(file.name());
-         Serial.print("\tSIZE: ");
-         Serial.println(file.size());
-      }
-      file = root.openNextFile();
-   }
-}
+  
 
 int set_textalignment(int element,int alignment, bool is_label){
   //alignment 0=left; 1=middle; 2=right
   int fontwidth=0;
-  int sprite_width=0;
   for (const char* ptr = display_elements[element].value; *ptr != '\0'; ++ptr){
-    if ( element != 15 || element != 16){
-      if (!std::isspace(static_cast<unsigned char>(*ptr))) {
-        if (element == RPMT || element == TMPT || element == FFT ||  element == NOZT || element == OILT  ){
-          fontwidth += (segments26.max_char_width() + 2)/2;    
-        }else{
-          fontwidth += segmentsa42.max_char_width() + 2;
-        }  
-      }
-    }else{
-        fontwidth += segmentsa42.max_char_width();
-    }
+        if (!std::isspace(static_cast<unsigned char>(*ptr))) {
+          //if (*(ptr + 1) == '\0' ) {
+          //if (element == RPMT || element == TMPT || element == FFT ||  element == NOZT || element == OILT  ){
+            //fontwidth += (segments26.max_char_width() + 5)/2;    
+            //display_elements[element].sprite->te
+            fontwidth += display_elements[element].sprite->fontWidth();
+          //}else{
+            //fontwidth += segmentsa42.max_char_width() + 5;
+          //}  
+        }
   }
+  /*
+  Serial.print("Element: ");Serial.println(element);
+  Serial.print("Sprite width: ");Serial.println(display_elements[element].sprite_width);
+  Serial.print("Font width: ");Serial.println(fontwidth);
+  Serial.print("Text width: ");Serial.println(display_elements[element].sprite->textWidth(display_elements[element].value));
+  Serial.print("Single Font width: ");Serial.println(display_elements[element].sprite->fontWidth());
+  Serial.print("Right: ");Serial.println(display_elements[element].sprite_width - fontwidth);
+  Serial.print("Middle: ");Serial.println((display_elements[element].sprite_width - fontwidth)/2);
+  */
 
   if (alignment == 2){
-    return display_elements[element].sprite_width - fontwidth;
+    return display_elements[element].sprite_width - display_elements[element].sprite->textWidth(display_elements[element].value);
   }else if (alignment == 1){
-    return (display_elements[element].sprite_width - fontwidth)/2;
+    return (display_elements[element].sprite_width - display_elements[element].sprite->textWidth(display_elements[element].value))/2;
   }else{
     return 0;
   }
@@ -262,9 +255,10 @@ void update_element(int element){
   int x1 = set_textalignment(element, display_elements[element].textalign, false);
   
   display_elements[element].sprite->clear();
-  display_elements[element].sprite->setCursor(x1,1);
+  display_elements[element].sprite->setCursor(x1,4);
   if ( element == FUELU || element == FUELL || element == BINGO ){
-    display_elements[element].sprite->setFont(&segmentsa42);
+    display_elements[element].sprite->setFont((display_elements[element].sprite->getFont()));
+    display_elements[element].sprite->setTextSize(1);
   }
   display_elements[element].sprite->setTextColor(ifei_color);
   display_elements[element].sprite->print(display_elements[element].value);
@@ -311,25 +305,28 @@ void update_Bingo(const char* value,int x,int y){
 */
 void update_Clock(int element){
   String TIME;
-  if (element == 19){
+  if (element == CLOCKU){
      TIME = TC_H + TC_Dd1 + TC_M + TC_Dd2 + TC_S;
   }else{
      TIME = LC_H + LC_Dd1 + LC_M + LC_Dd2 + LC_S;
   }
  display_elements[element].value = TIME.c_str();
-  
+ int x1 = set_textalignment(element, display_elements[element].textalign, false);
+
   display_elements[element].sprite->clear();
-  display_elements[element].sprite->setCursor(1,1);
-  display_elements[element].sprite->setFont(&clock28_font);
+  display_elements[element].sprite->setCursor(x1,1);
+  //display_elements[element].sprite->setFont(&clock28_font);
+  //display_elements[element].sprite->setFont(&segmentsa42);
+  //display_elements[element].sprite->setTextSize(0.9);
   display_elements[element].sprite->print(TIME);
   display_elements[element].sprite->pushSprite(display_elements[element].pos_x,display_elements[element].pos_y);
 }
 
 void update_nozzel(int element){
   String filename = "/" + NOZL_PATH + "/" + display_elements[element].value;
-  //NOZL_IMAGE.drawBmp(SD, filename.c_str(), 0, 0);
-  
   NOZL_IMAGE.drawBmp(SPIFFS, filename.c_str(), 0, 0);
+  
+  //NOZL_IMAGE.drawJpgFile(SPIFFS, filename.c_str(), 0, 0,150,154);
   NOZL_IMAGE.pushSprite(display_elements[element].pos_x,display_elements[element].pos_y);
   update_element(NOZT);
 }
@@ -389,6 +386,26 @@ void onIfeiTempTextureChange(char* newValue) {
   }
 }
 DcsBios::StringBuffer<1> ifeiTempTextureBuffer(0x74be, onIfeiTempTextureChange);
+bool SPBIT;
+// ************** SP (CODES) ***************************
+void onIfeiSpChange(char* newValue) {
+
+  //if (display_elements[TMPL].value == "   ") { 
+  display_elements[TMPL].value = newValue;
+  update_element(TMPL);
+  //}
+}
+
+DcsBios::StringBuffer<3> ifeiSpBuffer(0x74b2, onIfeiSpChange);
+
+void onIfeiCodesChange(char* newValue) {
+ // if (display_elements[TMPL].value == "   ") { 
+    display_elements[TMPR].value = newValue;
+    update_element(TMPR);
+  //}
+}
+DcsBios::StringBuffer<3> ifeiCodesBuffer(0x74ae, onIfeiCodesChange);
+
 
 //################## FUEL FLOW LEFT ##################Y
 void onIfeiFfLChange(char* newValue) {
@@ -456,7 +473,19 @@ void onExtNozzlePosLChange(unsigned int newValue) {
    if (NOZL_v != NOZL_v_OLD){
     NOZL_v_OLD = NOZL_v;
     switch (NOZL_v) { // NOZ LEFT POSITION IFEI
-      case 0 ... 4:    display_elements[NOZL].value = "L0.bmp"; update_nozzel(NOZL); break;
+      /*case 0 ... 4:    display_elements[NOZL].value = "L0.bmp"; update_nozzel(NOZL); break;
+      case 5 ... 14:  display_elements[NOZL].value = "L10.bmp"; update_nozzel(NOZL); break;
+      case 15 ... 24:  display_elements[NOZL].value = "L20.bmp"; update_nozzel(NOZL); break;
+      case 25 ... 34:  display_elements[NOZL].value = "L30.bmp"; update_nozzel(NOZL); break;
+      case 35 ... 44:  display_elements[NOZL].value = "L40.bmp"; update_nozzel(NOZL); break;
+      case 45 ... 54:  display_elements[NOZL].value = "L50.bmp"; update_nozzel(NOZL); break;
+      case 55 ... 64:  display_elements[NOZL].value = "L60.bmp"; update_nozzel(NOZL); break;
+      case 65 ... 74:  display_elements[NOZL].value = "L70.bmp"; update_nozzel(NOZL); break;
+      case 75 ... 84:  display_elements[NOZL].value = "L80.bmp"; update_nozzel(NOZL); break;
+      case 85 ... 94:  display_elements[NOZL].value = "L90.bmp"; update_nozzel(NOZL); break;
+      case 95 ... 100: display_elements[NOZL].value = "L100.bmp"; update_nozzel(NOZL); break;
+      */
+     case 0 ... 4:    display_elements[NOZL].value = "L0.bmp"; update_nozzel(NOZL); break;
       case 5 ... 14:  display_elements[NOZL].value = "L10.bmp"; update_nozzel(NOZL); break;
       case 15 ... 24:  display_elements[NOZL].value = "L20.bmp"; update_nozzel(NOZL); break;
       case 25 ... 34:  display_elements[NOZL].value = "L30.bmp"; update_nozzel(NOZL); break;
@@ -482,8 +511,21 @@ void onExtNozzlePosRChange(unsigned int newValue) {
    NOZR_v = map(newValue, 0, 65535, 0, 100);
   // if (NOZR_v != NOZR_v_OLD){
    // NOZR_v_OLD = NOZR_v;
-    Serial.print("NOZ: ");Serial.println(NOZR_v);
+
     switch (NOZR_v) { // NOZ RIGHT POSITION IFEI
+    /*
+      case 0 ... 4:    display_elements[NOZR].value = "R0.bmp"; update_nozzel(NOZR); break;
+      case 5 ... 14:  display_elements[NOZR].value = "R10.bmp"; update_nozzel(NOZR); break;
+      case 15 ... 24:  display_elements[NOZR].value = "R20.bmp"; update_nozzel(NOZR); break;
+      case 25 ... 34:  display_elements[NOZR].value = "R30.bmp"; update_nozzel(NOZR); break;
+      case 35 ... 44:  display_elements[NOZR].value = "R40.bmp"; update_nozzel(NOZR); break;
+      case 45 ... 54:  display_elements[NOZR].value = "R50.bmp"; update_nozzel(NOZR); break;
+      case 55 ... 64:  display_elements[NOZR].value = "R60.bmp"; update_nozzel(NOZR); break;
+      case 65 ... 74:  display_elements[NOZR].value = "R70.bmp"; update_nozzel(NOZR); break;
+      case 75 ... 84:  display_elements[NOZR].value = "R80.bmp"; update_nozzel(NOZR); break;
+      case 85 ... 94:  display_elements[NOZR].value = "R90.bmp"; update_nozzel(NOZR); break;
+      case 95 ... 100: display_elements[NOZR].value = "R100.bmp"; update_nozzel(NOZR); break;
+    */
       case 0 ... 4:    display_elements[NOZR].value = "R0.bmp"; update_nozzel(NOZR); break;
       case 5 ... 14:  display_elements[NOZR].value = "R10.bmp"; update_nozzel(NOZR); break;
       case 15 ... 24:  display_elements[NOZR].value = "R20.bmp"; update_nozzel(NOZR); break;
@@ -520,27 +562,10 @@ void onCockkpitLightModeSwChange(unsigned int newValue) {
   if (ifeiCol != 0) {
     NOZL_PATH = "Green";
     ifei_color = color_NIGHT;
-    
-    
-    /*
-    threeD.setTextColor(0x1CDD2AU);
-    labels.setTextColor(0x1CDD2AU);
-    ffT.setTextColor(0x1CDD2AU);
-    Bingo.setTextColor(0x1CDD2AU);
-    CLOCK.setTextColor(0x1CDD2AU);
-    */
   }
   if (ifeiCol == 0) {
     NOZL_PATH = "White";
     ifei_color = color_day;
-     
-    /*
-    threeD.setTextColor(0xFFFFFFU);
-    labels.setTextColor(0xFFFFFFU);
-    ffT.setTextColor(0xFFFFFFU);
-    Bingo.setTextColor(0xFFFFFFU);
-    CLOCK.setTextColor(0xFFFFFFU);
-    */
   }
 
   for ( int i = 0; i < 24; i++ ){
@@ -550,7 +575,6 @@ void onCockkpitLightModeSwChange(unsigned int newValue) {
         update_element(i);
       }
   }
-
   update_Clock(CLOCKU);
   update_Clock(CLOCKL);
 }
@@ -574,20 +598,30 @@ DcsBios::StringBuffer<6> ifeiTimeSetModeBuffer(0x74b6, onIfeiTimeSetModeChange);
 //################# FUEL UPPER ##################
 void onIfeiFuelUpChange(char* newValue) {
   display_elements[FUELU].value = newValue;
-   update_element(FUELU);
+  update_element(FUELU);
 }
 DcsBios::StringBuffer<6> ifeiFuelUpBuffer(0x7490, onIfeiFuelUpChange);
 
-/*void onIfeiTChange(char* newValue) {
-  display_elements[FUELU].value = newValue;
-  update_element(FUELU);
+void onIfeiTChange(char* newValue) {
+  int spaces = 0;
+  for (int i = 0; i < 6; i++){
+    if (isSpace(newValue[i])){
+      spaces++;
+    }
+  }
+  if ( spaces != 6){
+    display_elements[FUELU].value = newValue;
+    update_element(FUELU);
+  }
 }
 DcsBios::StringBuffer<6> ifeiTBuffer(0x757c, onIfeiTChange);
-*/
+
 //################## BINGO ################## Y
 void onIfeiBingoChange(char* newValue) {
-  display_elements[BINGO].value = newValue;
-  update_element(BINGO);
+  
+    display_elements[BINGO].value = newValue;
+    update_element(BINGO);
+
 }
 DcsBios::StringBuffer<5> ifeiBingoBuffer(0x7468, onIfeiBingoChange);
 
@@ -684,7 +718,6 @@ void setup(void) {
   DcsBios::setup(ssid,passwd);
   //DcsBios::setup();
   tft.begin();
-  create_display_elements();
 
 
   Serial.begin(115200);
@@ -697,6 +730,7 @@ if(!SPIFFS.begin(true)){
     return;
   }
 
+  create_display_elements();
 
   tft.setColorDepth(24);
   //tft.fillScreen(0x000000U);
@@ -715,13 +749,43 @@ if(!SPIFFS.begin(true)){
  
   update_Clock(CLOCKU);
   update_Clock(CLOCKL);
-  listDir(SPIFFS, "/", 0);
 }
 
 
 
-
-
+  bool forward = true;
+  int i = 0;
+unsigned long start = 0;
+unsigned long nozzle_update = 0;
 void loop() {
+  start=millis();
   DcsBios::loop();
+  
+  
+  if (millis() - nozzle_update > 2000){
+      String NOZL_v = String('L') + String(i) + ".bmp";
+      String NOZR_v = String('R') + String(i) + ".bmp";
+      display_elements[NOZL].value = NOZL_v.c_str();
+      display_elements[NOZR].value = NOZR_v.c_str();
+      update_nozzel(NOZL);
+      update_nozzel(NOZR);
+  
+      nozzle_update = millis();
+      if ( forward ){
+        if ( i == 100){
+          forward = false;
+          i-=10;
+        }else {
+          i+=10;
+        }
+      }else{
+        if (i == 0){
+          forward = true;
+          i+=10;
+        }else{
+          i-=10;
+        }
+      }
+  }
+  Serial.print("Looptime: ");Serial.println(millis()-start);
 }
