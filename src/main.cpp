@@ -80,7 +80,23 @@ LGFX_Sprite ffT(&tft);
 LGFX_Sprite Fuel(&tft);
 LGFX_Sprite CLOCK(&tft);
 
-LGFX_Sprite NOZL_IMAGE_W[12]{
+LGFX_Sprite NOZL_IMAGE[27];
+  
+LGFX_Sprite NOZR_IMAGE[27];
+/*{
+  LGFX_Sprite(&tft),
+  LGFX_Sprite(&tft),
+  LGFX_Sprite(&tft),
+  LGFX_Sprite(&tft),
+  LGFX_Sprite(&tft),
+  LGFX_Sprite(&tft),
+  LGFX_Sprite(&tft),
+  LGFX_Sprite(&tft),
+  LGFX_Sprite(&tft),
+  LGFX_Sprite(&tft),
+  LGFX_Sprite(&tft),
+  LGFX_Sprite(&tft),
+  LGFX_Sprite(&tft),
   LGFX_Sprite(&tft),
   LGFX_Sprite(&tft),
   LGFX_Sprite(&tft),
@@ -93,23 +109,10 @@ LGFX_Sprite NOZL_IMAGE_W[12]{
   LGFX_Sprite(&tft),
   LGFX_Sprite(&tft),
   LGFX_Sprite(&tft)
-};
-LGFX_Sprite NOZR_IMAGE_W[12]{
-  LGFX_Sprite(&tft),
-  LGFX_Sprite(&tft),
-  LGFX_Sprite(&tft),
-  LGFX_Sprite(&tft),
-  LGFX_Sprite(&tft),
-  LGFX_Sprite(&tft),
-  LGFX_Sprite(&tft),
-  LGFX_Sprite(&tft),
-  LGFX_Sprite(&tft),
-  LGFX_Sprite(&tft),
-  LGFX_Sprite(&tft),
-  LGFX_Sprite(&tft)
-};
+};*/
 LGFX_Sprite SMALL_BLOCK(&tft);
 LGFX_Sprite NOZT_SPRITE(&tft);
+LGFX_Sprite POINTER(&tft);
 
 
 
@@ -170,9 +173,9 @@ display_element display_elements[]= {
   { 65, 18,180,188,1,&LABELS,"X100"}, //FFTL
   { 95, 38, 58,400,2,&THREED,"0"}, //OILL
   { 95, 38,260,400,0,&THREED,"0"}, //OILR
-  { 58, 18,180,400,1,&LABELS,"OIL"}, //OILT
-  {150,154, 58,230,0,&LABELS,"L0.bmp"}, //NOZL
-  {150,154,211,230,0,&LABELS,"R0.bmp"}, //NOZR
+  { 58, 18,180,418,1,&LABELS,"OIL"}, //OILT
+  {150,154, 58,230,0,&NOZL_IMAGE[0],"0"}, //NOZL
+  {150,154,211,230,0,&NOZR_IMAGE[0],"0"}, //NOZR
   { 58, 18,180,300,1,&LABELS,"NOZ"}, //NOZT
   {176, 38,560, 30,2,&Fuel,"0"}, //FUELU
   {176, 38,560, 85,2,&Fuel,"0"}, //FUELL
@@ -188,19 +191,63 @@ display_element display_elements[]= {
 
 void create_image_sprite(){
   int j = 0;
-  for (int i = 0; i <= 100; i += 10){
-    String filename = "/" + NOZL_PATH + "/L" + String(i) + ".bmp";
-    NOZL_IMAGE_W[j].setPsram(true);
-    NOZL_IMAGE_W[j].createFromBmp(SPIFFS,filename.c_str());
+  //Left Nozzel White 
+  for (int i = 0; i <= 120; i += 10){
+    String filename = "/White/L" + String(i) + ".bmp";
+    NOZL_IMAGE[j].setPsram(true);
+    NOZL_IMAGE[j].createSprite(150,154);
+    //NOZL_IMAGE[j].createFromBmp(SPIFFS,filename.c_str());
+    NOZL_IMAGE[j].setColorDepth(24);
+    NOZL_IMAGE[j].setPaletteColor(1, 0x000000U);
+    NOZL_IMAGE[j].fillScreen(0xFF0000U);
+    NOZL_IMAGE[j].drawBmpFile(SPIFFS,filename.c_str());
+    
+    
+    
     j++;
   }
+  //Left Nozzel Green
+  for (int i = 0; i <= 120; i += 10){
+    String filename = "/Green/L" + String(i) + ".bmp";
+    NOZL_IMAGE[j].setPsram(true);
+    NOZL_IMAGE[j].setColorDepth(24);
+    NOZL_IMAGE[j].setPaletteColor(1, 0x000000U);
+    NOZL_IMAGE[j].createFromBmp(SPIFFS,filename.c_str());
+    j++;
+  }
+  NOZL_IMAGE[j].setPsram(true);
+  NOZL_IMAGE[j].setColorDepth(24);
+  NOZL_IMAGE[j].setPaletteColor(1, 0x000000U);
+  NOZL_IMAGE[j].createSprite(display_elements[NOZL].sprite_width, display_elements[NOZL].sprite_hight);
+  NOZL_IMAGE[j].fillScreen(0x000000U);
+  
   j = 0;
-  for (int k = 0; k <= 100; k += 10){
-    String filename = "/" + NOZL_PATH + "/R" + String(k) + ".bmp";
-    NOZR_IMAGE_W[j].setPsram(true);
-    NOZR_IMAGE_W[j].createFromBmp(SPIFFS,filename.c_str());
+  //Right Nozzel White 
+  for (int k = 0; k <= 120; k += 10){
+    String filename = "/White/R" + String(k) + ".bmp";
+    NOZR_IMAGE[j].setPsram(true);
+    NOZR_IMAGE[j].setColorDepth(24);
+    NOZR_IMAGE[j].setPaletteColor(1, 0x000000U);
+    NOZR_IMAGE[j].createFromBmp(SPIFFS,filename.c_str());
     j++;
   }
+  
+  //Right Nozzel Green 
+  for (int k = 0; k <= 120; k += 10){
+    String filename = "/Green/R" + String(k) + ".bmp";
+    NOZR_IMAGE[j].setPsram(true);
+    NOZR_IMAGE[j].setColorDepth(24);
+    NOZR_IMAGE[j].setPaletteColor(1, 0x000000U);
+    NOZR_IMAGE[j].createFromBmp(SPIFFS,filename.c_str());
+    j++;
+  }
+  NOZR_IMAGE[j].setPsram(true);
+  NOZR_IMAGE[j].setColorDepth(24);
+  NOZR_IMAGE[j].setPaletteColor(1, 0x000000u);
+  NOZR_IMAGE[j].createSprite(display_elements[NOZR].sprite_width, display_elements[NOZR].sprite_hight);
+  NOZR_IMAGE[j].fillScreen(0x000000U);
+
+  
 }
 
 void create_display_elements(){
@@ -246,11 +293,6 @@ void create_display_elements(){
   Fuel.setColorDepth(24);
   Fuel.setTextWrap(false);
   Fuel.setTextColor(ifei_color);
-
-  NOZL_IMAGE_W[11].createSprite(display_elements[NOZL].sprite_width, display_elements[NOZL].sprite_hight);
-  NOZL_IMAGE_W[11].fillScreen(0x000000U);
-  NOZR_IMAGE_W[11].createSprite(display_elements[NOZR].sprite_width, display_elements[NOZR].sprite_hight);
-  NOZR_IMAGE_W[11].fillScreen(0x000000U);
 }
 
 
@@ -329,6 +371,7 @@ void update_Clock(int element){
   }
 
   display_elements[element].sprite->clear();
+  display_elements[element].sprite->setTextColor(ifei_color);
   
   
   if ( H[0] == 32 ){
@@ -503,93 +546,237 @@ DcsBios::StringBuffer<1> ifeiOilTextureBuffer(0x74c4, onIfeiOilTextureChange);
 int NOZL_v = 0;
 int NOZL_v_OLD = 0;
 
+
+int colormode = 0;
 void onExtNozzlePosLChange(unsigned int newValue) {
    NOZL_v = map(newValue, 0, 65535, 0, 100);
-   if (NOZL_v != NOZL_v_OLD){
-    NOZL_v_OLD = NOZL_v;
+   //if (NOZL_v != NOZL_v_OLD){
+   // NOZL_v_OLD = NOZL_v;
+
+   //Switch between green and white images
+    
     switch (NOZL_v) { // NOZ LEFT POSITION IFEI
       
-      case 0 ... 4: NOZL_IMAGE_W[0].pushSprite(display_elements[NOZL].pos_x,display_elements[NOZL].pos_y);
- break;
-      case 5 ... 14:  NOZL_IMAGE_W[1].pushSprite(display_elements[NOZL].pos_x,display_elements[NOZL].pos_y);
- break;
-      case 15 ... 24:  NOZL_IMAGE_W[2].pushSprite(display_elements[NOZL].pos_x,display_elements[NOZL].pos_y);
- break;
-      case 25 ... 34:  NOZL_IMAGE_W[3].pushSprite(display_elements[NOZL].pos_x,display_elements[NOZL].pos_y);
- break;
-      case 35 ... 44:  NOZL_IMAGE_W[4].pushSprite(display_elements[NOZL].pos_x,display_elements[NOZL].pos_y);
- break;
-      case 45 ... 54:  NOZL_IMAGE_W[5].pushSprite(display_elements[NOZL].pos_x,display_elements[NOZL].pos_y);
- break;
-      case 55 ... 64:  NOZL_IMAGE_W[6].pushSprite(display_elements[NOZL].pos_x,display_elements[NOZL].pos_y);
- break;
-      case 65 ... 74:  NOZL_IMAGE_W[7].pushSprite(display_elements[NOZL].pos_x,display_elements[NOZL].pos_y);
- break;
-      case 75 ... 84:  NOZL_IMAGE_W[8].pushSprite(display_elements[NOZL].pos_x,display_elements[NOZL].pos_y);
- break;
-      case 85 ... 94:  NOZL_IMAGE_W[9].pushSprite(display_elements[NOZL].pos_x,display_elements[NOZL].pos_y);
- break;
-      case 95 ... 100: NOZL_IMAGE_W[10].pushSprite(display_elements[NOZL].pos_x,display_elements[NOZL].pos_y);
- break;
+      case 0 ... 4: 
+        //NOZL_IMAGE[0 + colormode].pushSprite(display_elements[NOZL].pos_x,display_elements[NOZL].pos_y);
+        display_elements[NOZL].sprite = &NOZL_IMAGE[0 + colormode];
+        display_elements[NOZL].value= "0";
+        break;
+      case 5 ... 14:  
+        //NOZL_IMAGE[1 + colormode].pushSprite(display_elements[NOZL].pos_x,display_elements[NOZL].pos_y);
+        display_elements[NOZL].sprite = &NOZL_IMAGE[1 + colormode];
+        display_elements[NOZL].value= "1";
+        break;
+      case 15 ... 24:  
+        //NOZL_IMAGE[2 + colormode].pushSprite(display_elements[NOZL].pos_x,display_elements[NOZL].pos_y);
+        display_elements[NOZL].sprite = &NOZL_IMAGE[2 + colormode];
+        display_elements[NOZL].value= "2";
+        break;
+      case 25 ... 34:  
+        //NOZL_IMAGE[3 + colormode].pushSprite(display_elements[NOZL].pos_x,display_elements[NOZL].pos_y);
+        display_elements[NOZL].sprite = &NOZL_IMAGE[3 + colormode];
+        display_elements[NOZL].value= "3";
+        break;
+      case 35 ... 44:  
+        //NOZL_IMAGE[4 + colormode].pushSprite(display_elements[NOZL].pos_x,display_elements[NOZL].pos_y);
+        display_elements[NOZL].sprite = &NOZL_IMAGE[4 + colormode];
+        display_elements[NOZL].value= "4";
+        break;
+      case 45 ... 54:  
+        //NOZL_IMAGE[5 + colormode].pushSprite(display_elements[NOZL].pos_x,display_elements[NOZL].pos_y);
+        display_elements[NOZL].sprite = &NOZL_IMAGE[5 + colormode];
+        display_elements[NOZL].value= "5";
+        break;
+      case 55 ... 64:  
+        //NOZL_IMAGE[6 + colormode].pushSprite(display_elements[NOZL].pos_x,display_elements[NOZL].pos_y);
+        display_elements[NOZL].sprite = &NOZL_IMAGE[6 + colormode];
+        display_elements[NOZL].value= "6";
+        break;
+      case 65 ... 74:  
+        //NOZL_IMAGE[7 + colormode].pushSprite(display_elements[NOZL].pos_x,display_elements[NOZL].pos_y);
+        display_elements[NOZL].sprite = &NOZL_IMAGE[7 + colormode];
+        display_elements[NOZL].value= "7";
+        break;
+      case 75 ... 84:  
+        //NOZL_IMAGE[8 + colormode].pushSprite(display_elements[NOZL].pos_x,display_elements[NOZL].pos_y);
+        display_elements[NOZL].sprite = &NOZL_IMAGE[8 + colormode];
+        display_elements[NOZL].value= "8";
+        break;
+      case 85 ... 94:  
+        //NOZL_IMAGE[9 + colormode].pushSprite(display_elements[NOZL].pos_x,display_elements[NOZL].pos_y);
+        display_elements[NOZL].sprite = &NOZL_IMAGE[9 + colormode];
+        display_elements[NOZL].value= "9";
+        break;
+      case 95 ... 100: 
+        //NOZL_IMAGE[10 + colormode].pushSprite(display_elements[NOZL].pos_x,display_elements[NOZL].pos_y);
+        display_elements[NOZL].sprite = &NOZL_IMAGE[10 + colormode];
+        display_elements[NOZL].value= "10";
+        break;
     }
-   }
+    display_elements[NOZL].sprite->pushSprite(display_elements[NOZL].pos_x,display_elements[NOZL].pos_y,0x000000U);
+    //display_elements[NOZT].sprite->pushSprite(display_elements[NOZT].pos_x,display_elements[NOZT].pos_y);
+
 }
 
 
 
 DcsBios::IntegerBuffer extNozzlePosLBuffer(0x757a, 0xffff, 0, onExtNozzlePosLChange);
+/*
+// NOZZLE POINTER Left
+void onIfeiLpointerTextureChange(char* newValue) {
+    if (strcmp(newValue, "0") == 0) {
+    NOZL_IMAGE[25].pushSprite(&tft,display_elements[NOZL].pos_x,display_elements[NOZL].pos_y);
+  }else{
+    display_elements[NOZL].sprite->pushSprite(&tft,display_elements[NOZL].pos_x,display_elements[NOZL].pos_y,0x000000U);
+  }
+}
+DcsBios::StringBuffer<1> ifeiLpointerTextureBuffer(0x74d8, onIfeiLpointerTextureChange);
 
+
+//Left Scale
+void onIfeiLscaleTextureChange(char* newValue) {
+    if (strcmp(newValue, "0") == 0) {
+      NOZL_IMAGE[25].pushSprite(&tft,display_elements[NOZL].pos_x,display_elements[NOZL].pos_y);
+    }else {
+      int image_pos = 12;
+      if ( ifei_color == color_NIGHT){
+        image_pos = 24;
+      }
+      NOZL_IMAGE[image_pos].pushSprite(&tft,display_elements[NOZL].pos_x,display_elements[NOZL].pos_y,0x000000U); 
+      }    
+}
+DcsBios::StringBuffer<1> ifeiLscaleTextureBuffer(0x74c8, onIfeiLscaleTextureChange);
+
+void onIfeiL100TextureChange(char* newValue) {
+    if (strcmp(newValue, "0") == 0) {
+      NOZL_IMAGE[25].pushSprite(&tft,display_elements[NOZL].pos_x,display_elements[NOZL].pos_y);
+    }else{
+      int image_pos = 11;
+      if ( ifei_color == color_NIGHT){
+        image_pos = 23;
+      }
+      NOZL_IMAGE[image_pos].pushSprite(&tft,display_elements[NOZL].pos_x,display_elements[NOZL].pos_y,0x000000U);
+      }
+}
+DcsBios::StringBuffer<1> ifeiL100TextureBuffer(0x74d4, onIfeiL100TextureChange);
+*/
 //RIGHT
 int NOZR_v = 0;
 int NOZR_v_OLD = 0;
+
+
+
 void onExtNozzlePosRChange(unsigned int newValue) {
    NOZR_v = map(newValue, 0, 65535, 0, 100);
   // if (NOZR_v != NOZR_v_OLD){
    // NOZR_v_OLD = NOZR_v;
 
-    switch (NOZR_v) { // NOZ RIGHT POSITION IFEI
-    case 0 ... 4:     NOZR_IMAGE_W[0].pushSprite(display_elements[NOZR].pos_x,display_elements[NOZR].pos_y);
- break;
-      case 5 ... 14:  NOZR_IMAGE_W[1].pushSprite(display_elements[NOZR].pos_x,display_elements[NOZR].pos_y);
- break;
-      case 15 ... 24:  NOZR_IMAGE_W[2].pushSprite(display_elements[NOZR].pos_x,display_elements[NOZR].pos_y);
- break;
-      case 25 ... 34:  NOZR_IMAGE_W[3].pushSprite(display_elements[NOZR].pos_x,display_elements[NOZR].pos_y);
- break;
-      case 35 ... 44:  NOZR_IMAGE_W[4].pushSprite(display_elements[NOZR].pos_x,display_elements[NOZR].pos_y);
- break;
-      case 45 ... 54:  NOZR_IMAGE_W[5].pushSprite(display_elements[NOZR].pos_x,display_elements[NOZR].pos_y);
- break;
-      case 55 ... 64:  NOZR_IMAGE_W[6].pushSprite(display_elements[NOZR].pos_x,display_elements[NOZR].pos_y);
- break;
-      case 65 ... 74:  NOZR_IMAGE_W[7].pushSprite(display_elements[NOZR].pos_x,display_elements[NOZR].pos_y);
- break;
-      case 75 ... 84:  NOZR_IMAGE_W[8].pushSprite(display_elements[NOZR].pos_x,display_elements[NOZR].pos_y);
- break;
-      case 85 ... 94:  NOZR_IMAGE_W[9].pushSprite(display_elements[NOZR].pos_x,display_elements[NOZR].pos_y);
- break;
-      case 95 ... 100: NOZR_IMAGE_W[10].pushSprite(display_elements[NOZR].pos_x,display_elements[NOZR].pos_y);
- break;
-    }
+   //Switch between green and white images
     
-   //}
+    
+    switch (NOZR_v) { // NOZ RIGHT POSITION IFEI
+      case 0 ... 4:     
+        //NOZR_IMAGE[0 + colormode].pushSprite(display_elements[NOZR].pos_x,display_elements[NOZR].pos_y);
+        display_elements[NOZR].sprite = &NOZR_IMAGE[0 + colormode];
+        display_elements[NOZR].value= "0";
+        break;
+      case 5 ... 14:  
+        //NOZR_IMAGE[1 + colormode].pushSprite(display_elements[NOZR].pos_x,display_elements[NOZR].pos_y);
+        display_elements[NOZR].sprite = &NOZR_IMAGE[1 + colormode];
+        display_elements[NOZR].value= "1";
+        break;
+      case 15 ... 24:  
+        //NOZR_IMAGE[2 + colormode].pushSprite(display_elements[NOZR].pos_x,display_elements[NOZR].pos_y);
+        display_elements[NOZR].sprite = &NOZR_IMAGE[2 + colormode];
+        display_elements[NOZR].value= "2";
+        break;
+      case 25 ... 34:  
+        //NOZR_IMAGE[3 + colormode].pushSprite(display_elements[NOZR].pos_x,display_elements[NOZR].pos_y);
+        display_elements[NOZR].sprite = &NOZR_IMAGE[3 + colormode];
+        display_elements[NOZR].value= "3";
+        break;
+      case 35 ... 44:  
+        //NOZR_IMAGE[4 + colormode].pushSprite(display_elements[NOZR].pos_x,display_elements[NOZR].pos_y);
+        display_elements[NOZR].sprite = &NOZR_IMAGE[4 + colormode];
+        display_elements[NOZR].value= "4";
+        break;
+      case 45 ... 54:  
+        //NOZR_IMAGE[5 + colormode].pushSprite(display_elements[NOZR].pos_x,display_elements[NOZR].pos_y);
+        display_elements[NOZR].sprite = &NOZR_IMAGE[5 + colormode];
+        display_elements[NOZR].value= "5";
+        break;
+      case 55 ... 64:  
+        //NOZR_IMAGE[6 + colormode].pushSprite(display_elements[NOZR].pos_x,display_elements[NOZR].pos_y);
+        display_elements[NOZR].sprite = &NOZR_IMAGE[6 + colormode];
+        display_elements[NOZR].value= "6";
+        break;
+      case 65 ... 74:  
+        //NOZR_IMAGE[7 + colormode].pushSprite(display_elements[NOZR].pos_x,display_elements[NOZR].pos_y);
+        display_elements[NOZR].sprite = &NOZR_IMAGE[7 + colormode];
+        display_elements[NOZR].value= "7";
+        break;
+      case 75 ... 84:  
+        //NOZR_IMAGE[8 + colormode].pushSprite(display_elements[NOZR].pos_x,display_elements[NOZR].pos_y);
+        display_elements[NOZR].sprite = &NOZR_IMAGE[8 + colormode];
+        display_elements[NOZR].value= "8";
+        break;
+      case 85 ... 94:  
+        //NOZR_IMAGE[9 + colormode].pushSprite(display_elements[NOZR].pos_x,display_elements[NOZR].pos_y);
+        display_elements[NOZR].sprite = &NOZR_IMAGE[9 + colormode];
+        display_elements[NOZR].value= "9";
+        break;
+      case 95 ... 100: 
+        //NOZR_IMAGE[10 + colormode].pushSprite(display_elements[NOZR].pos_x,display_elements[NOZR].pos_y);
+        display_elements[NOZR].sprite = &NOZR_IMAGE[10 + colormode];
+        display_elements[NOZR].value= "10";
+        break;
+    }
+    display_elements[NOZR].sprite->pushSprite(display_elements[NOZR].pos_x,display_elements[NOZR].pos_y,0x000000U);
+    //display_elements[NOZT].sprite->pushSprite(display_elements[NOZT].pos_x,display_elements[NOZT].pos_y);
 }
 
 DcsBios::IntegerBuffer extNozzlePosRBuffer(0x7578, 0xffff, 0, onExtNozzlePosRChange);
 
 int old_NOZZL_v;
 int old_NOZZR_v;
-// NOZZLE POINTER 
-
+// NOZZLE POINTER Right
+/*
 void onIfeiRpointerTextureChange(char* newValue) {
   if (strcmp(newValue, "0") == 0) {
-    NOZL_IMAGE_W[11].pushSprite(display_elements[NOZL].pos_x,display_elements[NOZL].pos_y);
-    NOZR_IMAGE_W[11].pushSprite(display_elements[NOZR].pos_x,display_elements[NOZR].pos_y);
+    NOZR_IMAGE[25].pushSprite(&tft,display_elements[NOZR].pos_x,display_elements[NOZR].pos_y);
+  }else{
+    display_elements[NOZR].sprite->pushSprite(&tft,display_elements[NOZR].pos_x,display_elements[NOZR].pos_y,0x000000U);
   }
 }
 DcsBios::StringBuffer<1> ifeiRpointerTextureBuffer(0x74da, onIfeiRpointerTextureChange);
 
+//Right Scale
+void onIfeiRscaleTextureChange(char* newValue) {
+    if (strcmp(newValue, "0") == 0) {
+      NOZR_IMAGE[25].pushSprite(&tft,display_elements[NOZR].pos_x,display_elements[NOZR].pos_y);
+    }else{
+      int image_pos = 12;
+      if ( ifei_color == color_NIGHT){
+        image_pos = 24;
+      }
+      NOZR_IMAGE[image_pos].pushSprite(&tft,display_elements[NOZR].pos_x,display_elements[NOZR].pos_y,0x000000U); 
+    }
+}
+DcsBios::StringBuffer<1> ifeiRscaleTextureBuffer(0x74ca, onIfeiRscaleTextureChange);
 
+void onIfeiR100TextureChange(char* newValue) {
+    if (strcmp(newValue, "0") == 0) {
+      NOZR_IMAGE[25].pushSprite(&tft,display_elements[NOZR].pos_x,display_elements[NOZR].pos_y);
+    }else{
+      int image_pos = 11;
+      if ( ifei_color == color_NIGHT){
+        image_pos = 23;
+      }
+      NOZR_IMAGE[image_pos].pushSprite(&tft,display_elements[NOZR].pos_x,display_elements[NOZR].pos_y,0x000000U);
+    }
+}
+DcsBios::StringBuffer<1> ifeiR100TextureBuffer(0x74d6, onIfeiR100TextureChange);
+*/
 ///////////// IFEI COLOUR TEXT GREN OR WHITE ///////////////////////
 
 int old_ifeiCol = 0;
@@ -599,25 +786,30 @@ void onCockkpitLightModeSwChange(unsigned int newValue) {
     Serial.print("Lightmode Change: ");Serial.println(newValue);
     old_ifeiCol = ifeiCol;
     if (ifeiCol != 0) {
+      colormode = 12;
       NOZL_PATH = "Green";
       ifei_color = color_NIGHT;
     }
     if (ifeiCol == 0) {
+      colormode = 0;
       NOZL_PATH = "White";
       ifei_color = color_day;
     }
 
     for ( int i = 0; i < 24; i++ ){
-        if ( i == NOZL || i == NOZR){
-          //create_image_sprite();
-          display_elements[NOZL].sprite->pushSprite(display_elements[NOZL].pos_x,display_elements[NOZL].pos_y);
-          display_elements[NOZR].sprite->pushSprite(display_elements[NOZR].pos_x,display_elements[NOZR].pos_y);
+        if ( i == NOZL ){
+          display_elements[NOZL].sprite = &NOZL_IMAGE[atoi(display_elements[NOZL].value) + colormode];
+          display_elements[NOZL].sprite->pushSprite(&tft,display_elements[NOZL].pos_x,display_elements[NOZL].pos_y,0x000000U);
+        }else if (i == NOZR ){
+          display_elements[NOZR].sprite = &NOZR_IMAGE[atoi(display_elements[NOZR].value) + colormode];
+          display_elements[NOZR].sprite->pushSprite(&tft,display_elements[NOZR].pos_x,display_elements[NOZR].pos_y,0x000000U);
         }else{
           update_element(i);
         }
     }
     update_Clock(CLOCKU);
     update_Clock(CLOCKL);
+    
   }
 }
  
@@ -812,8 +1004,8 @@ if(!SPIFFS.begin(true)){
   create_display_elements();
 
   tft.setColorDepth(24);
-  tft.fillScreen(0x000000U);
-  //tft.fillScreen(tft.color888(141,76,71));
+  //tft.fillScreen(0x000000U);
+  tft.fillScreen(tft.color888(141,76,71));
   
   
 
@@ -828,6 +1020,12 @@ if(!SPIFFS.begin(true)){
  
   update_Clock(CLOCKU);
   update_Clock(CLOCKL);
+
+  NOZL_IMAGE[11].pushSprite(&tft,display_elements[NOZL].pos_x,display_elements[NOZL].pos_y,0x000000U);
+  NOZL_IMAGE[12].pushSprite(&tft,display_elements[NOZL].pos_x,display_elements[NOZL].pos_y,0x000000U);
+  NOZR_IMAGE[11].pushSprite(&tft,display_elements[NOZR].pos_x,display_elements[NOZR].pos_y,0x000000U);
+  NOZR_IMAGE[12].pushSprite(&tft,display_elements[NOZR].pos_x,display_elements[NOZR].pos_y,0x000000U);
+  //POINTER.setPivot(0,0);
 }
 
 
@@ -836,6 +1034,7 @@ if(!SPIFFS.begin(true)){
   int i = 0;
 unsigned long start = 0;
 unsigned long nozzle_update = 0;
+int a = 0;
 void loop() {
   
   DcsBios::loop();
@@ -843,32 +1042,36 @@ void loop() {
   /*
   if (millis() - nozzle_update > 1000){
     start=millis();
-      String NOZL_v = String('L') + String(i) + ".bmp";
-      String NOZR_v = String('R') + String(i) + ".bmp";
-      display_elements[NOZL].value = NOZL_v.c_str();
-      display_elements[NOZR].value = NOZR_v.c_str();
-      //update_nozzel(NOZL);
-      //update_nozzel(NOZR);
-      NOZL_IMAGE_W[i].pushSprite(display_elements[NOZL].pos_x,display_elements[NOZL].pos_y);
-      NOZT_SPRITE.pushSprite(display_elements[NOZT].pos_x,display_elements[NOZT].pos_y);
-      NOZR_IMAGE_W[i].pushSprite(display_elements[NOZR].pos_x,display_elements[NOZR].pos_y);
+
+     NOZL_IMAGE[i].pushSprite(&tft,display_elements[NOZL].pos_x,display_elements[NOZL].pos_y,0x000000U);
+    
+      //NOZL_IMAGE[i].pushSprite(display_elements[NOZL].pos_x,display_elements[NOZL].pos_y,0x000000U);
+      //NOZT_SPRITE.pushSprite(display_elements[NOZT].pos_x,display_elements[NOZT].pos_y);
+      //NOZR_IMAGE[23].pushSprite(display_elements[NOZR].pos_x,display_elements[NOZR].pos_y,0xFF0000U);
+      //NOZR_IMAGE[i].pushImage(display_elements[NOZR].pos_x,display_elements[NOZR].pos_y,150,154, 0x000000U);
+      NOZR_IMAGE[i].pushSprite(&tft,display_elements[NOZR].pos_x,display_elements[NOZR].pos_y,0x000000U);
       //update_element(NOZT);
-      NOZT_SPRITE.pushSprite(display_elements[NOZT].pos_x,display_elements[NOZT].pos_y);
+      //NOZT_SPRITE.pushSprite(display_elements[NOZT].pos_x,display_elements[NOZT].pos_y);
       
       nozzle_update = millis();
       if ( forward ){
         if ( i == 10){
           forward = false;
           i--;
+          a-=8;
         }else {
           i++;
+          a+=8;
         }
       }else{
         if (i == 0){
           forward = true;
           i++;
+          a+=8;
+
         }else{
           i--;
+          a-=8;
         }
       }
         Serial.print("Draw Time: ");Serial.println(millis()-start);
