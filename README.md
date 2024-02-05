@@ -18,9 +18,21 @@ It includes the following features
 - Arduino IDE and PlatformIO compatible
 
 
+# Installation 
+
+This repository offeres versions for platformIO as well as Arduino IDE. 
+Use the desired folder for your IDE needs. 
+
+## Arduino 
+
+**Prerequisites**
+
+Install Libraries
+Libraries
+
 # Fonts
 
-This projects uses custom fonts directly inspired by the IFEI representation in DCS-WORLD. The [VLW Font](https://wiki.seeedstudio.com/Wio-Terminal-LCD-Anti-aliased-Fonts/) font format was chosen since it offers lightweight anti aliased font capabilities. 
+This projects uses custom fonts directly inspired by the IFEI representation in DCS-WORLD. The [VLW Font](https://wiki.seeedstudio.com/Wio-Terminal-LCD-Anti-aliased-Fonts/) font format was chosen since it offers lightweight anti aliased font capabilities which looks way more clean than bitmap fonts.  
 
 ## How fonts were created
 - DCS-WORLD textures were used as templates. 
@@ -38,5 +50,19 @@ This projects uses custom fonts directly inspired by the IFEI representation in 
   <img src="https://github.com/SCUBA82/OH-IFEI/blob/main/workdir/Documentation/pictures/Processing.png" width="400">
 
 - The converted VLW fonts are stored on the esp32s3 in littlefs
+
+
+# Image Sprites
+
+To display the nozzel gauges, [individual images](https://github.com/SCUBA82/OH-IFEI/tree/main/workdir/Images) for each possible pointer position and color were created.
+Again DCS-WORLD textures were used as templates to outline custom vector graphics.
+
+LoyvanGFX offers the possibility to draw one specific color within a sprite transparent. The color 0x000000 (pure black) was chosen to be transparent so no overlapping occurs when a pointer sprite is updated. 
+In regions were this effect was not wanted (pointer movement region) a slightly different color 0x010000 was chosen, so this area is still printed in "black" but not transparent. 
+
+
+
+
+
 
 
