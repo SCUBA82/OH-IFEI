@@ -20,34 +20,35 @@ Notes:
 
 //################ Configure Display elelments ###############################
 //{width,hight, posx, posy, textalign, sprite, value} 
-int offset_y = 10;
+int offset_x = -10;
+int offset_y = 30;
 display_element display_elements[]= {
 //{  w,  h, px, py,a, sprite,   v }
-  { 76, 38, 92, 20 + offset_y,2,&TWOD,"12",""}, //RPML 
-  { 76, 38,246, 20 + offset_y,2,&TWOD,"34",""}, //RPMR
-  { 58, 18,180, 31 + offset_y,1,&LABELS,"RPM",""}, //RPMT
-  {108, 38, 60, 85 + offset_y,2,&THREED,"567",""}, //TMPL
-  {108, 38,246, 85 + offset_y,2,&THREED,"890",""}, //TMPR
-  { 58, 18,180, 96 + offset_y,1,&LABELS,"TEMP",""}, //TMPT
-  {108, 38, 60,160 + offset_y,2,&THREED,"123",""}, //FFL
-  {108, 38,246,160 + offset_y,2,&THREED,"456",""}, //FFR
-  { 58, 18,180,171 + offset_y,1,&LABELS,"FF",""}, //FFTU
-  { 65, 18,180,188 + offset_y,1,&LABELS,"X100",""}, //FFTL
-  { 76, 38, 92,400 + offset_y,2,&TWOD,"78",""}, //OILL
-  { 76, 38,246,400 + offset_y,2,&TWOD,"90",""}, //OILR
-  { 58, 18,180,415 + offset_y,1,&LABELS,"OIL",""}, //OILT
-  {150,154, 58,230 + offset_y,0,&NOZL_IMAGE[0],"0",""}, //NOZL
-  {150,154,211,230 + offset_y,0,&NOZR_IMAGE[0],"0",""}, //NOZR
-  { 58, 18,180,300 + offset_y,1,&LABELS,"NOZ",""}, //NOZT
-  {176, 38,560, 30 + offset_y,2,&Fuel,"12345",""}, //FUELU
-  {176, 38,560, 85 + offset_y,2,&Fuel,"67890",""}, //FUELL
-  {176, 38,560,215 + offset_y,2,&Fuel,"500",""}, //BINGO
-  { 58, 18,625,185 + offset_y,1,&LABELS,"BINGO",""}, //BINGOT
-  {176, 35,560,310 + offset_y,2,&CLOCK,"",""}, //CLOCKU
-  {176, 35,560,375 + offset_y,2,&CLOCK,"",""}, //CLOCKL
-  { 18, 18,736,327 + offset_y,1,&TAG,"Z",""}, //ZULU Tag
-  { 18, 18,736, 50 + offset_y,1,&TAG,"L",""}, //L Tag
-  { 18, 18,736,105 + offset_y,1,&TAG,"R",""}, //R Tag
+  { 76, 38, 92 + offset_x, 20 + offset_y,2,&TWOD,"12",""}, //RPML 
+  { 76, 38,246 + offset_x, 20 + offset_y,2,&TWOD,"34",""}, //RPMR
+  { 58, 18,180 + offset_x, 31 + offset_y,1,&LABELS,"RPM",""}, //RPMT
+  {108, 38, 60 + offset_x, 85 + offset_y,2,&THREED,"567",""}, //TMPL
+  {108, 38,246 + offset_x, 85 + offset_y,2,&THREED,"890",""}, //TMPR
+  { 58, 18,180 + offset_x , 96 + offset_y,1,&LABELS,"TEMP",""}, //TMPT
+  {108, 38, 60 + offset_x,160 + offset_y,2,&THREED,"123",""}, //FFL
+  {108, 38,246 + offset_x,160 + offset_y,2,&THREED,"456",""}, //FFR
+  { 58, 18,180 + offset_x,171 + offset_y,1,&LABELS,"FF",""}, //FFTU
+  { 65, 18,180 + offset_x,188 + offset_y,1,&LABELS,"X100",""}, //FFTL
+  { 76, 38, 92 + offset_x,400 + offset_y,2,&TWOD,"78",""}, //OILL
+  { 76, 38,246 + offset_x,400 + offset_y,2,&TWOD,"90",""}, //OILR
+  { 58, 18,180 + offset_x,415 + offset_y,1,&LABELS,"OIL",""}, //OILT
+  {150,154, 58 + offset_x,230 + offset_y,0,&NOZL_IMAGE[0],"0",""}, //NOZL
+  {150,154,211 + offset_x,230 + offset_y,0,&NOZR_IMAGE[0],"0",""}, //NOZR
+  { 58, 18,180 + offset_x,300 + offset_y,1,&LABELS,"NOZ",""}, //NOZT
+  {176, 38,560 + offset_x, 30 + offset_y,2,&Fuel,"12345",""}, //FUELU
+  {176, 38,560 + offset_x, 85 + offset_y,2,&Fuel,"67890",""}, //FUELL
+  {176, 38,560 + offset_x,215 + offset_y,2,&Fuel,"500",""}, //BINGO
+  { 58, 18,625 + offset_x,185 + offset_y,1,&LABELS,"BINGO",""}, //BINGOT
+  {176, 35,570 + offset_x,350 + offset_y,2,&CLOCK,"",""}, //CLOCKU
+  {176, 35,570 + offset_x,415 + offset_y,2,&CLOCK,"",""}, //CLOCKL
+  { 18, 18,746 + offset_x,367 + offset_y,1,&TAG,"Z",""}, //ZULU Tag
+  { 18, 18,736 + offset_x, 50 + offset_y,1,&TAG,"L",""}, //L Tag
+  { 18, 18,736 + offset_x,105 + offset_y,1,&TAG,"R",""}, //R Tag
 };
 
 
