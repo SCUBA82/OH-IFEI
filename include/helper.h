@@ -1,8 +1,7 @@
 #ifndef HELPER_H
-    #define HELPER_H
-#endif
+#define HELPER_H
 #include <Arduino.h>
-#include <PanelLan.h>
+#include <display_driver.h>
 
 
 //DCS BIOS Forks
@@ -16,6 +15,21 @@
     #define DCSBIOS_DEFAULT_SERIAL
 #endif 
 
+// InputPins
+#ifdef ENABLE_DCS_BIOS_INPUTS
+  #define BRIGTHNESS_PIN GPIO_NUM_2
+  #define MODE_SELECTOR_MAN GPIO_NUM_1
+  #define MODE_SELECTOR_AUTO GPIO_NUM_42
+  #define SELECT_HUD_PIN GPIO_NUM_4
+  #define SELECT_LDDI_PIN GPIO_NUM_40
+  #define MODE_AW9523_PIN 0  
+  #define QTY_AW9523_PIN  1
+  #define ARROW_UP_AW9523_PIN 2
+  #define ARROW_DOWN_AW9523_PIN 3
+  #define ZONE_AW9523_PIN 4
+  #define ET_AW9523_PIN 5
+#endif 
+
 //Variables
 
 //Clock
@@ -25,7 +39,7 @@ String TC_M = "00";  //TOP clock minutes
 String TC_Dd2 = ":"; //TOP clock colon 2
 String TC_S = "00";  //TOP clock seconds
 
-String LC_H = "0";   //Lower clock hours
+String LC_H = "0 ";   //Lower clock hours
 String LC_Dd1 = ":"; //Lower clock colon 1
 String LC_M = "00";  //Lower clock minutes
 String LC_Dd2 = ":"; //Lower clock colon 2
@@ -33,7 +47,6 @@ String LC_S = "00";  //Lower clock seconds
 
 // IFEI COLOR MODE
 
-int ifeiCol;
 unsigned int ifei_color = 0xFFFFFFU;
 const unsigned int color_day = 0xFFFFFFU;
 const unsigned int color_NIGHT = 0x1CDD2AU;
@@ -49,19 +62,26 @@ bool NOZR_numbers_visible = true;
 // lighting test switch active
 bool test_switch_enabled = false;
 
-// demo variables
 
+//Aircraft 
+bool ishornet = false;
+// demo variables
 unsigned long nozzle_update = 0;
 bool demo_forward = true;
+bool reset = false;
+int demo_counter = 0;
 
 
 // Create tft screen 
-PanelLan tft(BOARD_SC05);
+LGFX tft;
+
+
 
 
 // Create sprites 
 
-LGFX_Sprite THREED(&tft); // Data digits sprite (RPM/TEMP/FF/OIL)
+LGFX_Sprite TWOD(&tft);   // Data digits sprite (RPM/OIL)
+LGFX_Sprite THREED(&tft); // Data digits sprite (TEMP/FF)
 LGFX_Sprite LABELS(&tft); // Text label sprite 
 LGFX_Sprite ffT(&tft);    // Special text sprite label for fuel flow
 LGFX_Sprite Fuel(&tft);   //Fuel sprite
@@ -190,4 +210,5 @@ char* remove_trailing_spaces(const char* str) {
 
     return result;
 }
+#endif
 

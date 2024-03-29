@@ -1,85 +1,60 @@
 /*
 ####### Stand alone DCS-BIOS IFEI simulation using a ZX7D00CE01S esp32-s3 7" touchscreen 
 Notes:
-- While using active wifi, I had screen glitches with the default TFT clk frequency provided in the PANELAN library
-Change frequency in PanelLan_esp32_arduino/src/board/sc05/sc05.cpp to
-#define PanelLan_RGB_CLK_FREQ           (16000000)
 - Upload Filesystem image for Nozzel Pointer images as well as fonts to internal littlefs prior to programming
-
+- Use config.h to configure your project.
 */
 
 #include <Arduino.h>
 #include <FS.h>
 #include <LittleFS.h>
-
+#include <Wire.h>
+#include <config.h>
 #define LITTLEFS LittleFS
-
-//####################### Start User Settings ####################################
-/*Which DCS-BIOS fork are you using? 
-------------------------------------------------------------
-DCSBIOS_DEFAULT = https://github.com/DCS-Skunkworks/dcs-bios-arduino-library
-Using USB for data communication
-------------------------------------------------------------
-DCSBIOS_WIFI_FORK = https://github.com/pavidovich/dcs-bios-arduino-library
-Using Wifi for data communication
-*/
-
-//#define DCSBIOS_DEFAULT   
-#define DCSBIOS_WIFI_FORK   
-#include <helper.h>
-
-
+#include "helper.h"
 #include  <DcsBios.h>
+#ifdef ENABLE_DCS_BIOS_INPUTS
+  #include <dcs-bios_aw9523.h>
+#endif
 
 
-// Wifi credentials if enabled
-#ifdef DCSBIOS_WIFI_FORK
-  char ssid[] = "Freudenhaus2";
-  char passwd[] = "aquarius";
-#endif 
-
-
-//####################### END User Settings ####################################
-//####################### Don't edit anything below this line ##################
-
-
-//Configure Display emelments
+//################ Configure Display elelments ###############################
 //{width,hight, posx, posy, textalign, sprite, value} 
+int offset_y = 10;
 display_element display_elements[]= {
 //{  w,  h, px, py,a, sprite,   v }
-  {127, 38, 26, 20,2,&THREED,"012",""}, //RPML 
-  {127, 38,260, 20,0,&THREED,"345",""}, //RPMR
-  { 58, 18,180, 31,1,&LABELS,"RPM",""}, //RPMT
-  { 127, 38, 26, 85,2,&THREED,"678",""}, //TMPL
-  { 127, 38,260, 85,0,&THREED,"987",""}, //TMPR
-  { 58, 18,180, 96,1,&LABELS,"TEMP",""}, //TMPT
-  { 127, 38, 26,160,2,&THREED,"0",""}, //FFL
-  { 127, 38,260,160,2,&THREED,"0",""}, //FFR
-  { 58, 18,180,171,1,&LABELS,"FF",""}, //FFTU
-  { 65, 18,180,188,1,&LABELS,"X100",""}, //FFTL
-  { 95, 38, 58,400,2,&THREED,"0",""}, //OILL
-  { 95, 38,260,400,0,&THREED,"0",""}, //OILR
-  { 58, 18,180,415,1,&LABELS,"OIL",""}, //OILT
-  {150,154, 58,230,0,&NOZL_IMAGE[0],"0",""}, //NOZL
-  {150,154,211,230,0,&NOZR_IMAGE[0],"0",""}, //NOZR
-  { 58, 18,180,300,1,&LABELS,"NOZ",""}, //NOZT
-  {176, 38,560, 30,2,&Fuel,"0",""}, //FUELU
-  {176, 38,560, 85,2,&Fuel,"0",""}, //FUELL
-  {176, 38,560,215,2,&Fuel,"0",""}, //BINGO
-  { 58, 18,625,185,1,&LABELS,"BINGO",""}, //BINGOT
-  {176, 35,560,310,2,&CLOCK,"",""}, //CLOCKU
-  {176, 35,560,375,2,&CLOCK,"",""}, //CLOCKL
-  { 18, 18,736,327,1,&TAG,"Z",""}, //ZULU Tag
-  { 18, 18,736, 50,1,&TAG,"L",""}, //L Tag
-  { 18, 18,736,105,1,&TAG,"R",""}, //R Tag
+  { 76, 38, 92, 20 + offset_y,2,&TWOD,"12",""}, //RPML 
+  { 76, 38,246, 20 + offset_y,2,&TWOD,"34",""}, //RPMR
+  { 58, 18,180, 31 + offset_y,1,&LABELS,"RPM",""}, //RPMT
+  {108, 38, 60, 85 + offset_y,2,&THREED,"567",""}, //TMPL
+  {108, 38,246, 85 + offset_y,2,&THREED,"890",""}, //TMPR
+  { 58, 18,180, 96 + offset_y,1,&LABELS,"TEMP",""}, //TMPT
+  {108, 38, 60,160 + offset_y,2,&THREED,"123",""}, //FFL
+  {108, 38,246,160 + offset_y,2,&THREED,"456",""}, //FFR
+  { 58, 18,180,171 + offset_y,1,&LABELS,"FF",""}, //FFTU
+  { 65, 18,180,188 + offset_y,1,&LABELS,"X100",""}, //FFTL
+  { 76, 38, 92,400 + offset_y,2,&TWOD,"78",""}, //OILL
+  { 76, 38,246,400 + offset_y,2,&TWOD,"90",""}, //OILR
+  { 58, 18,180,415 + offset_y,1,&LABELS,"OIL",""}, //OILT
+  {150,154, 58,230 + offset_y,0,&NOZL_IMAGE[0],"0",""}, //NOZL
+  {150,154,211,230 + offset_y,0,&NOZR_IMAGE[0],"0",""}, //NOZR
+  { 58, 18,180,300 + offset_y,1,&LABELS,"NOZ",""}, //NOZT
+  {176, 38,560, 30 + offset_y,2,&Fuel,"12345",""}, //FUELU
+  {176, 38,560, 85 + offset_y,2,&Fuel,"67890",""}, //FUELL
+  {176, 38,560,215 + offset_y,2,&Fuel,"500",""}, //BINGO
+  { 58, 18,625,185 + offset_y,1,&LABELS,"BINGO",""}, //BINGOT
+  {176, 35,560,310 + offset_y,2,&CLOCK,"",""}, //CLOCKU
+  {176, 35,560,375 + offset_y,2,&CLOCK,"",""}, //CLOCKL
+  { 18, 18,736,327 + offset_y,1,&TAG,"Z",""}, //ZULU Tag
+  { 18, 18,736, 50 + offset_y,1,&TAG,"L",""}, //L Tag
+  { 18, 18,736,105 + offset_y,1,&TAG,"R",""}, //R Tag
 };
-
 
 
 //################ Create sprites ###############################
 
 
-//Create a sprite for each possible pointer nozzel pointer position from an image located within LITTLEFS and store it in Psram
+//Create a sprite for each possible pointer nozzel pointer position from an image, located within LITTLEFS and store it in Psram
 //additionl sprites for scale and scale numbers as well as a blank sprite
 void create_image_sprite(){
   int j = 0;
@@ -100,6 +75,7 @@ void create_image_sprite(){
     NOZL_IMAGE[j].createFromBmp(LITTLEFS,filename.c_str());
     j++;
   }
+  //Black sprite to hide nozzel gauge
   NOZL_IMAGE[j].setPsram(true);
   NOZL_IMAGE[j].setColorDepth(24);
   NOZL_IMAGE[j].createSprite(display_elements[NOZL].sprite_width, display_elements[NOZL].sprite_hight);
@@ -123,6 +99,7 @@ void create_image_sprite(){
     NOZR_IMAGE[j].createFromBmp(LITTLEFS,filename.c_str());
     j++;
   }
+  //Black sprite to hide nozzel gauge
   NOZR_IMAGE[j].setPsram(true);
   NOZR_IMAGE[j].setColorDepth(24);
   NOZR_IMAGE[j].createSprite(display_elements[NOZR].sprite_width, display_elements[NOZR].sprite_hight);
@@ -133,7 +110,15 @@ void create_image_sprite(){
 //create sprites for digital display areas and text lables; Fonts loaded from littlefs
 void create_display_elements(){
  create_image_sprite();
-  THREED.createSprite(display_elements[RPML].sprite_width, display_elements[RPML].sprite_hight);
+  
+  TWOD.createSprite(display_elements[RPML].sprite_width, display_elements[RPML].sprite_hight);
+  TWOD.loadFont(LITTLEFS,"/Fonts/IFEI-Data-36.vlw");
+  TWOD.setFont(TWOD.getFont());
+  TWOD.setColorDepth(24);
+  TWOD.setTextWrap(false);
+  TWOD.setTextColor(ifei_color);
+    
+  THREED.createSprite(display_elements[TMPL].sprite_width, display_elements[TMPL].sprite_hight);
   THREED.loadFont(LITTLEFS,"/Fonts/IFEI-Data-36.vlw");
   THREED.setFont(THREED.getFont());
   THREED.setColorDepth(24);
@@ -167,31 +152,22 @@ void create_display_elements(){
   Fuel.setTextColor(ifei_color);
 }
 
-//Align text within it's sprite left, middle or right   
+//Align text within it's sprite. 
+//alignment 0=left; 1=middle; 2=right  
 int set_textalignment(int element,int alignment){
-  //alignment 0=left; 1=middle; 2=right
-  int fontwidth=0;
-  for (const char* ptr = display_elements[element].value; *ptr != '\0'; ++ptr){
-            fontwidth += display_elements[element].sprite->fontWidth();
-  }
-  if (alignment == 2){
-    return display_elements[element].sprite_width - display_elements[element].sprite->textWidth(display_elements[element].value);
+  if (alignment == 2){ 
+      return (display_elements[element].sprite_width - display_elements[element].sprite->textWidth(display_elements[element].value)); 
   }else if (alignment == 1){
     return (display_elements[element].sprite_width - display_elements[element].sprite->textWidth(display_elements[element].value))/2;
-  }else{
-    return 0;
+  }else{  
+      return 0;
+  
   }
 }
 
-
 // Update digital and label sprites and print them on the screen
 void update_element(int element){
-  int x1;
-  if (!test_switch_enabled && element == FFR){
-    x1 = set_textalignment(element, display_elements[element].textalign) - 32; 
-  }else{
-    x1 = set_textalignment(element, display_elements[element].textalign);
-  }
+  int x1 = set_textalignment(element, display_elements[element].textalign);
   display_elements[element].sprite->clear();
   display_elements[element].sprite->setCursor(x1,0);
   display_elements[element].sprite->setTextColor(ifei_color);
@@ -230,7 +206,6 @@ void update_Clock(int element){
 
   display_elements[element].sprite->clear();
   display_elements[element].sprite->setTextColor(ifei_color);
-  
   if ( H[0] == 32 ){
      display_elements[element].sprite->setCursor(57,1);
   }else {
@@ -272,21 +247,12 @@ void onLightsTestSwChange(unsigned int newValue) {
     int d_elements[] = {TMPL,TMPR, FFL,FFR};
     if ( newValue == 1 ){
       test_switch_enabled = true;
-      for (int i=0; i < 4; i++){
-        display_elements[d_elements[i]].old_value = display_elements[d_elements[i]].value;
-        display_elements[d_elements[i]].value = "1000";
-        update_element(d_elements[i]);
-      }
-    }else{
-      for (int i=0; i < 4; i++){
-        display_elements[d_elements[i]].value = display_elements[d_elements[i]].old_value;
-        update_element(d_elements[i]);
-      }
+    }else{      
       test_switch_enabled = false;
-
     }
 }
 DcsBios::IntegerBuffer lightsTestSwBuffer(0x74c8, 0x0800, 11, onLightsTestSwChange);
+
 
 //################## RPM  ##################
 void onIfeiRpmLChange(char* newValue) {
@@ -318,19 +284,27 @@ DcsBios::StringBuffer<1> ifeiRpmTextureBuffer(0x74bc, onIfeiRpmTextureChange);
 // ################## TEMP  ##################
 //Left
 void onIfeiTempLChange(char* newValue) {
-  if (!test_switch_enabled){
+  //if (!test_switch_enabled){
+   // Serial.println("TestSwitchEnabled: ");Serial.println(test_switch_enabled);
+   if (strcmp(newValue, "100") == 0 ){
+     display_elements[TMPL].value = "1000";
+   }else{
     display_elements[TMPL].value = remove_trailing_spaces(newValue) ;
+   }
     update_element(TMPL);
-  }
+  //}
    
 }
 DcsBios::StringBuffer<3> ifeiTempLBuffer(0x74a6, onIfeiTempLChange);
 //Right
 void onIfeiTempRChange(char* newValue) {
-  if (!test_switch_enabled){
+   if (strcmp(newValue, "100") == 0 ){
+     display_elements[TMPR].value = "1000";
+   }else{
     display_elements[TMPR].value = remove_trailing_spaces(newValue);
+   }
     update_element(TMPR);
-  }
+ // }
 }
 DcsBios::StringBuffer<3> ifeiTempRBuffer(0x74aa, onIfeiTempRChange);
 
@@ -369,19 +343,23 @@ DcsBios::StringBuffer<3> ifeiCodesBuffer(0x74ae, onIfeiCodesChange);
 //################## FUEL FLOW  ##################
 //LEFT
 void onIfeiFfLChange(char* newValue) {
-  if (!test_switch_enabled){
+   if (strcmp(newValue, "100") == 0 ){
+     display_elements[FFL].value = "1000";
+   }else{
     display_elements[FFL].value = remove_trailing_spaces(newValue);
+   }
     update_element(FFL);
-  }
 }
 DcsBios::StringBuffer<3> ifeiFfLBuffer(0x7482, onIfeiFfLChange);
 
 //Right
 void onIfeiFfRChange(char* newValue) {
-  if (!test_switch_enabled){
+  if (strcmp(newValue, "100") == 0 ){
+     display_elements[FFR].value = "1000";
+   }else{
     display_elements[FFR].value = remove_trailing_spaces(newValue);
+   }
     update_element(FFR);
-  }
 }
 DcsBios::StringBuffer<3> ifeiFfRBuffer(0x7486, onIfeiFfRChange);
 //Texture
@@ -787,55 +765,114 @@ void onIfeiTimerSChange(char* newValue) {
 DcsBios::StringBuffer<2> ifeiTimerSBuffer(0x7478, onIfeiTimerSChange);
 
 
-//################## CLOCK ##################
+//################## Display Brightness ##################
 //Only changes in night mode
 
 void onIfeiDispIntLtChange(unsigned int newValue) {
     tft.setBrightness(map(newValue, 0, 65535, 0, 255));
 }
 DcsBios::IntegerBuffer ifeiDispIntLtBuffer(0x7564, 0xffff, 0, onIfeiDispIntLtChange);
+
+//################## Display Brightness ##################
+
+void onAcftNameChange(char* newValue){
+   if ( !strcmp(newValue, "FA-18C_hornet")){
+      ishornet = true;
+    }else {
+      ishornet = false;
+    }
+}
+DcsBios::StringBuffer<16> AcftNameBuffer(0x0000, onAcftNameChange);
 //################## END DCS-BIOS ##################
 
+//################## START DCS-BIOS INPUTS ##################
+#ifdef ENABLE_DCS_BIOS_INPUTS
+
+//IFEI
+DcsBios::Switch2PosAW9523 ifeiModeBtn("IFEI_MODE_BTN", MODE_AW9523_PIN);
+DcsBios::Switch2PosAW9523 ifeiQtyBtn("IFEI_QTY_BTN", QTY_AW9523_PIN);
+DcsBios::Switch2PosAW9523 ifeiUpBtn("IFEI_UP_BTN", ARROW_UP_AW9523_PIN);
+DcsBios::Switch2PosAW9523 ifeiDwnBtn("IFEI_DWN_BTN", ARROW_DOWN_AW9523_PIN);
+DcsBios::Switch2PosAW9523 ifeiZoneBtn("IFEI_ZONE_BTN", ZONE_AW9523_PIN);
+DcsBios::Switch2PosAW9523 ifeiEtBtn("IFEI_ET_BTN", ET_AW9523_PIN);
+//HUD VIDEO panel
+DcsBios::Potentiometer ifei_brightness("IFEI", BRIGTHNESS_PIN);
+DcsBios::Switch3Pos modeSelectorSw("MODE_SELECTOR_SW", MODE_SELECTOR_MAN, MODE_SELECTOR_AUTO);
+DcsBios::Switch3Pos selectHudLddiRddi("SELECT_HUD_LDDI_RDDI", SELECT_HUD_PIN, SELECT_LDDI_PIN);
+
+#endif
+
+//################## END DCS-BIOS INPUTS ##################
 
 
-  int i = 0;
-unsigned long start = 0;
-
-int a = 0;
-void demo(){
-    for (int i=0; i < 24; i++){
-        if ( i != NOZL && i != NOZR ){
-          update_element(i);
-        }
-    }
-    
-      update_Clock(CLOCKU);
-      update_Clock(CLOCKL);
-    
+void show_demo(){
+  
+    if (!reset){
+      reset = true;
+      tft.fillScreen(0x000000U);
+      ifei_color = color_day;
       NOZL_IMAGE[11].pushSprite(&tft,display_elements[NOZL].pos_x,display_elements[NOZL].pos_y,0x000000U);
       NOZL_IMAGE[12].pushSprite(&tft,display_elements[NOZL].pos_x,display_elements[NOZL].pos_y,0x000000U);
       NOZR_IMAGE[11].pushSprite(&tft,display_elements[NOZR].pos_x,display_elements[NOZR].pos_y,0x000000U);
       NOZR_IMAGE[12].pushSprite(&tft,display_elements[NOZR].pos_x,display_elements[NOZR].pos_y,0x000000U);
       
-     if (millis() - nozzle_update > 1000){
-      NOZL_IMAGE[i].pushSprite(&tft,display_elements[NOZL].pos_x,display_elements[NOZL].pos_y,0x000000U);  
-      NOZR_IMAGE[i].pushSprite(&tft,display_elements[NOZR].pos_x,display_elements[NOZR].pos_y,0x000000U);    
-      nozzle_update = millis();
-      if ( demo_forward ){
-        if ( i == 10){
-          demo_forward = false;
-          i--;
-        }else {
-          i++;
-        }
-      }else{
-        if (i == 0){
-          demo_forward = true;
-          i++;
-        }else{
-          i--;
+      for (int i=0; i < 25; i++){
+        if ( i != NOZL && i != NOZR && i != CLOCKU && i != CLOCKL){
+          update_element(i);
         }
       }
+      update_Clock(CLOCKL);
+      update_Clock(CLOCKU);
+    } 
+    
+      
+     if (millis() - nozzle_update > 1000){
+      NOZL_IMAGE[demo_counter].pushSprite(&tft,display_elements[NOZL].pos_x,display_elements[NOZL].pos_y,0x000000U);  
+      NOZR_IMAGE[demo_counter].pushSprite(&tft,display_elements[NOZR].pos_x,display_elements[NOZR].pos_y,0x000000U);    
+      nozzle_update = millis();
+      if ( demo_forward ){
+        if ( demo_counter == 10){
+          demo_forward = false;
+          demo_counter--;
+        }else {
+          demo_counter++;
+        }
+      }else{
+        if (demo_counter == 0){
+          demo_forward = true;
+          demo_counter++;
+        }else{
+          demo_counter--;
+        }
+      }
+      if ( TC_S.toInt() < 9 ){
+        TC_S = "0" + String(TC_S.toInt() + 1);
+      }else{
+        TC_S = String(TC_S.toInt() + 1);
+      }
+      
+      if ( TC_S == "60" ){
+         if ( TC_M.toInt() < 9 ){
+          TC_M = "0" + String(TC_M.toInt() + 1);
+         }else{
+          TC_M = String(TC_M.toInt() + 1);
+         }
+        TC_S = "00";
+      }
+      if ( TC_M == "60" ){
+        if (TC_H == "24" ){
+          TC_H == "00";
+        }else{
+         if ( TC_H.toInt() < 9 ){
+          TC_H = "0" + String(TC_H.toInt() + 1);
+         }else{
+          TC_H = String(TC_H.toInt() + 1);
+         }
+        }
+         TC_M = "00";
+      }
+        
+      update_Clock(CLOCKU);
   }
 
 }
@@ -848,7 +885,7 @@ void setup(void) {
 #ifdef DCSBIOS_WIFI_FORK
   DcsBios::setup(ssid,passwd);
 #endif
-  
+		
   tft.begin();
   Serial.begin(115200);
   
@@ -859,11 +896,20 @@ if(!LITTLEFS.begin(true)){
 
   create_display_elements();
   tft.setColorDepth(24);
-  //tft.fillScreen(0x000000U);
-  tft.fillScreen(tft.color888(141,76,71));
+  tft.fillScreen(0x000000U);
+  //tft.fillScreen(tft.color888(141,76,71));
+#ifdef ENABLE_DCS_BIOS_INPUTS
+  ifeiDwnBtn.init();
+#endif
 }
 
 void loop() {
-  
   DcsBios::loop();
+  if (!ishornet){
+    show_demo();
+  }else if (reset){
+    tft.fillScreen(0x000000U);
+    //tft.fillScreen(tft.color888(141,76,71));
+    reset = false;
+  }
 }

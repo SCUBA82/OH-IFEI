@@ -235,7 +235,6 @@ do not come with their own build system, we are just putting everything into the
 		 
 		  if(udp.parsePacket()) {
 			remote_IP = udp.remoteIP(); // Gets the Remote IP			
-			
 			while (udp.available()) {
 			   parser.processChar(udp.read());
 			}
@@ -245,7 +244,6 @@ do not come with their own build system, we are just putting everything into the
 		  
 		}
 		bool tryToSendDcsBiosMessage(const char* msg, const char* arg) {
-		  
 		  uint8_t pos = 1;
 		  char car = msg[0];
 		  
@@ -257,6 +255,7 @@ do not come with their own build system, we are just putting everything into the
 			pos++;
 		  }
 		  udp.write(' ');
+		  pos = 1;
 		  car = arg[0];
 		  while (car!=0x00){
 			udp.write(car);

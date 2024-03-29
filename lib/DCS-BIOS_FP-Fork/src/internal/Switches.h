@@ -25,7 +25,7 @@ namespace DcsBios {
 		void pollInput() {
 			char state = digitalRead(pin_);
 			if (reverse_) state = !state;
-
+			
 			unsigned long now = millis();
 
 			if (state != debounceSteadyState_) {
